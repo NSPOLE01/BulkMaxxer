@@ -1,5 +1,5 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
-import { initializeAuth, getAuth, inMemoryPersistence, type Persistence } from 'firebase/auth';
+import { initializeAuth, getAuth } from 'firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getFirestore } from 'firebase/firestore';
 
@@ -12,32 +12,18 @@ const firebaseConfig = {
   appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID ?? '',
 };
 
-// AsyncStorage-backed persistence for React Native (Firebase v11 removed getReactNativePersistence)
-const asyncStoragePersistence = {
-  ...inMemoryPersistence,
-  type: 'LOCAL' as Persistence['type'],
-  // Firebase internally calls these underscore methods
-  _isAvailable: async () => true,
-  _set: async (key: string, value: object) => {
-    await AsyncStorage.setItem(key, JSON.stringify(value));
-  },
-  _get: async <T>(key: string): Promise<T | null> => {
-    const item = await AsyncStorage.getItem(key);
-    return item ? (JSON.parse(item) as T) : null;
-  },
-  _remove: async (key: string) => {
-    await AsyncStorage.removeItem(key);
-  },
-  _addListener: (_key: string, _listener: () => void) => {},
-  _removeListener: (_key: string, _listener: () => void) => {},
-} as unknown as Persistence;
+// getReactNativePersistence exists at runtime in Firebase v11 but is missing from TS types
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const { getReactNativePersistence } = require('firebase/auth');
 
 const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 
 // initializeAuth throws on hot-reload; fall back to getAuth
 export const auth = (() => {
   try {
-    return initializeAuth(app, { persistence: asyncStoragePersistence });
+    return initializeAuth(app, {
+      persistence: getReactNativePersistence(AsyncStorage),
+    });
   } catch {
     return getAuth(app);
   }
