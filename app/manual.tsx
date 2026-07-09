@@ -96,23 +96,23 @@ export default function ManualScreen() {
           <View key={field.key} style={styles.fieldGroup}>
             <Text style={styles.label}>
               {field.label}
-              {field.required && <Text style={styles.required}> *</Text>}
+              {field.required ? <Text style={styles.required}> *</Text> : null}
             </Text>
             <View style={styles.inputRow}>
               <TextInput
                 style={[styles.input, field.unit ? styles.inputWithUnit : null]}
-                placeholder={field.placeholder}
-                placeholderTextColor="#555"
-                keyboardType={field.keyboard as 'default' | 'numeric' | 'decimal-pad' ?? 'default'}
                 value={values[field.key]}
                 onChangeText={(v) => update(field.key, v)}
+                placeholder={field.placeholder}
+                placeholderTextColor="#AAAAAA"
+                keyboardType={field.keyboard ?? 'default'}
                 returnKeyType="next"
               />
-              {field.unit && (
-                <View style={styles.unitBadge}>
+              {field.unit ? (
+                <View style={styles.unitBox}>
                   <Text style={styles.unitText}>{field.unit}</Text>
                 </View>
-              )}
+              ) : null}
             </View>
           </View>
         ))}
@@ -124,7 +124,7 @@ export default function ManualScreen() {
           activeOpacity={0.8}
         >
           {loading ? (
-            <ActivityIndicator color="#000" />
+            <ActivityIndicator color="#FFFFFF" />
           ) : (
             <Text style={styles.saveBtnText}>Save Entry</Text>
           )}
@@ -137,7 +137,7 @@ export default function ManualScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0F0F0F',
+    backgroundColor: '#FFFFFF',
   },
   content: {
     paddingHorizontal: 16,
@@ -150,12 +150,10 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#AAAAAA',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    color: '#666666',
   },
   required: {
-    color: '#FF5252',
+    color: '#FF3B30',
   },
   inputRow: {
     flexDirection: 'row',
@@ -163,48 +161,47 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    backgroundColor: '#1A1A1A',
+    backgroundColor: '#F5F5F5',
     borderRadius: 10,
     paddingHorizontal: 14,
-    paddingVertical: 14,
-    fontSize: 16,
-    color: '#FFFFFF',
+    paddingVertical: 13,
+    fontSize: 15,
+    color: '#111111',
     borderWidth: 1,
-    borderColor: '#2A2A2A',
+    borderColor: '#E5E5E5',
   },
   inputWithUnit: {
     borderTopRightRadius: 0,
     borderBottomRightRadius: 0,
     borderRightWidth: 0,
   },
-  unitBadge: {
-    backgroundColor: '#2A2A2A',
+  unitBox: {
+    backgroundColor: '#F0F0F0',
+    borderWidth: 1,
+    borderColor: '#E5E5E5',
+    borderLeftWidth: 0,
     borderTopRightRadius: 10,
     borderBottomRightRadius: 10,
-    paddingHorizontal: 14,
-    paddingVertical: 14,
-    borderWidth: 1,
-    borderLeftWidth: 0,
-    borderColor: '#2A2A2A',
-    minWidth: 52,
-    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 13,
   },
   unitText: {
-    color: '#888',
     fontSize: 14,
+    color: '#999999',
+    fontWeight: '600',
   },
   saveBtn: {
-    backgroundColor: '#00C853',
+    backgroundColor: '#111111',
     borderRadius: 14,
     paddingVertical: 18,
     alignItems: 'center',
     marginTop: 8,
   },
   saveBtnDisabled: {
-    opacity: 0.6,
+    opacity: 0.5,
   },
   saveBtnText: {
-    color: '#000',
+    color: '#FFFFFF',
     fontWeight: '700',
     fontSize: 17,
   },

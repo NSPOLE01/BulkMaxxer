@@ -23,7 +23,7 @@ function CalorieRing({ consumed, goal }: { consumed: number; goal: number }) {
   return (
     <View style={styles.ringContainer}>
       <View style={styles.ringOuter}>
-        <View style={[styles.ringFill, { opacity: pct > 0 ? 1 : 0.15 }]} />
+        <View style={[styles.ringFill, { opacity: pct > 0 ? 1 : 0.1 }]} />
         <View style={styles.ringInner}>
           <Text style={styles.ringCalories}>{Math.round(consumed)}</Text>
           <Text style={styles.ringLabel}>calories</Text>
@@ -34,7 +34,7 @@ function CalorieRing({ consumed, goal }: { consumed: number; goal: number }) {
       </View>
       <View style={styles.goalRow}>
         <Text style={styles.goalText}>Goal: {goal} kcal</Text>
-        <Text style={[styles.goalPct, { color: pct >= 1 ? '#FF5252' : '#00C853' }]}>
+        <Text style={[styles.goalPct, { color: pct >= 1 ? '#FF3B30' : '#111111' }]}>
           {Math.round(pct * 100)}%
         </Text>
       </View>
@@ -100,7 +100,7 @@ export default function DashboardScreen() {
   const barData = weekData.map((d) => ({
     value: Math.round(d.calories),
     label: new Date(d.date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short' }),
-    frontColor: d.date === new Date().toISOString().split('T')[0] ? '#00C853' : '#2A6642',
+    frontColor: d.date === new Date().toISOString().split('T')[0] ? '#111111' : '#CCCCCC',
     topLabelComponent: () => null,
   }));
 
@@ -112,20 +112,17 @@ export default function DashboardScreen() {
         <RefreshControl
           refreshing={refreshing}
           onRefresh={onRefresh}
-          tintColor="#00C853"
+          tintColor="#111111"
         />
       }
     >
-      {/* Header */}
       <View style={styles.header}>
         <Text style={styles.appName}>BulkMaxxer</Text>
         <Text style={styles.dateText}>{today}</Text>
       </View>
 
-      {/* Calorie Ring */}
       <CalorieRing consumed={totalCalories} goal={CALORIE_GOAL} />
 
-      {/* Macro Cards */}
       <View style={styles.macroRow}>
         <MacroCard label="Protein" value={totalProtein} unit="g" />
         <MacroCard label="Fat" value={totalFat} unit="g" />
@@ -133,7 +130,6 @@ export default function DashboardScreen() {
         <MacroCard label="Sodium" value={totalSodium} unit="mg" />
       </View>
 
-      {/* Weekly Chart */}
       <View style={styles.chartSection}>
         <Text style={styles.sectionTitle}>This Week</Text>
         {weekData.length > 0 ? (
@@ -147,9 +143,9 @@ export default function DashboardScreen() {
               hideRules
               yAxisThickness={0}
               xAxisThickness={1}
-              xAxisColor="#2A2A2A"
-              yAxisTextStyle={{ color: '#666', fontSize: 10 }}
-              xAxisLabelTextStyle={{ color: '#888', fontSize: 10 }}
+              xAxisColor="#E5E5E5"
+              yAxisTextStyle={{ color: '#AAAAAA', fontSize: 10 }}
+              xAxisLabelTextStyle={{ color: '#AAAAAA', fontSize: 10 }}
               noOfSections={4}
               maxValue={Math.max(...barData.map((d) => d.value), CALORIE_GOAL) + 200}
               width={SCREEN_WIDTH - 64}
@@ -171,7 +167,7 @@ export default function DashboardScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0F0F0F',
+    backgroundColor: '#FFFFFF',
   },
   content: {
     paddingBottom: 32,
@@ -183,12 +179,12 @@ const styles = StyleSheet.create({
   appName: {
     fontSize: 28,
     fontWeight: '800',
-    color: '#00C853',
+    color: '#111111',
     letterSpacing: -0.5,
   },
   dateText: {
     fontSize: 14,
-    color: '#888',
+    color: '#999999',
     marginTop: 2,
   },
   ringContainer: {
@@ -200,7 +196,7 @@ const styles = StyleSheet.create({
     height: 180,
     borderRadius: 90,
     borderWidth: 12,
-    borderColor: '#2A2A2A',
+    borderColor: '#E5E5E5',
     justifyContent: 'center',
     alignItems: 'center',
     position: 'relative',
@@ -211,7 +207,7 @@ const styles = StyleSheet.create({
     height: 180,
     borderRadius: 90,
     borderWidth: 12,
-    borderColor: '#00C853',
+    borderColor: '#111111',
   },
   ringInner: {
     alignItems: 'center',
@@ -219,16 +215,16 @@ const styles = StyleSheet.create({
   ringCalories: {
     fontSize: 40,
     fontWeight: '800',
-    color: '#FFFFFF',
+    color: '#111111',
   },
   ringLabel: {
     fontSize: 13,
-    color: '#888',
+    color: '#999999',
     marginTop: -4,
   },
   ringRemaining: {
     fontSize: 11,
-    color: '#00C853',
+    color: '#666666',
     marginTop: 4,
   },
   goalRow: {
@@ -238,7 +234,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   goalText: {
-    color: '#666',
+    color: '#999999',
     fontSize: 13,
   },
   goalPct: {
@@ -253,7 +249,7 @@ const styles = StyleSheet.create({
   },
   macroCard: {
     flex: 1,
-    backgroundColor: '#1A1A1A',
+    backgroundColor: '#F5F5F5',
     borderRadius: 12,
     padding: 12,
     alignItems: 'center',
@@ -261,16 +257,16 @@ const styles = StyleSheet.create({
   macroValue: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: '#111111',
   },
   macroUnit: {
     fontSize: 10,
-    color: '#00C853',
+    color: '#999999',
     marginTop: -2,
   },
   macroLabel: {
     fontSize: 11,
-    color: '#888',
+    color: '#999999',
     marginTop: 4,
   },
   chartSection: {
@@ -279,26 +275,26 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: '#111111',
     marginBottom: 16,
   },
   chartWrapper: {
-    backgroundColor: '#1A1A1A',
+    backgroundColor: '#F5F5F5',
     borderRadius: 16,
     padding: 16,
   },
   emptyChart: {
-    backgroundColor: '#1A1A1A',
+    backgroundColor: '#F5F5F5',
     borderRadius: 16,
     padding: 32,
     alignItems: 'center',
   },
   emptyText: {
-    color: '#555',
+    color: '#AAAAAA',
     fontSize: 14,
   },
   goalLine: {
-    color: '#555',
+    color: '#AAAAAA',
     fontSize: 12,
     textAlign: 'center',
     marginTop: 8,

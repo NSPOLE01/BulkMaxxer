@@ -48,13 +48,11 @@ export default function LoginScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <View style={styles.inner}>
-        {/* Logo / Header */}
         <View style={styles.logoSection}>
           <Text style={styles.appName}>BulkMaxxer</Text>
           <Text style={styles.tagline}>Track every macro. Hit every goal.</Text>
         </View>
 
-        {/* Card */}
         <View style={styles.card}>
           <Text style={styles.cardTitle}>
             {mode === 'signin' ? 'Welcome back' : 'Create account'}
@@ -63,7 +61,7 @@ export default function LoginScreen() {
           <TextInput
             style={styles.input}
             placeholder="Email"
-            placeholderTextColor="#555"
+            placeholderTextColor="#AAAAAA"
             autoCapitalize="none"
             keyboardType="email-address"
             value={email}
@@ -73,7 +71,7 @@ export default function LoginScreen() {
           <TextInput
             style={styles.input}
             placeholder="Password"
-            placeholderTextColor="#555"
+            placeholderTextColor="#AAAAAA"
             secureTextEntry
             value={password}
             onChangeText={setPassword}
@@ -88,7 +86,7 @@ export default function LoginScreen() {
             activeOpacity={0.8}
           >
             {loading ? (
-              <ActivityIndicator color="#000" />
+              <ActivityIndicator color="#FFFFFF" />
             ) : (
               <Text style={styles.submitText}>
                 {mode === 'signin' ? 'Sign In' : 'Create Account'}
@@ -115,7 +113,7 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0F0F0F',
+    backgroundColor: '#FFFFFF',
   },
   inner: {
     flex: 1,
@@ -129,16 +127,16 @@ const styles = StyleSheet.create({
   appName: {
     fontSize: 40,
     fontWeight: '900',
-    color: '#00C853',
+    color: '#111111',
     letterSpacing: -1,
   },
   tagline: {
     fontSize: 15,
-    color: '#555',
+    color: '#999999',
     marginTop: 6,
   },
   card: {
-    backgroundColor: '#1A1A1A',
+    backgroundColor: '#F5F5F5',
     borderRadius: 20,
     padding: 24,
     gap: 14,
@@ -146,31 +144,31 @@ const styles = StyleSheet.create({
   cardTitle: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: '#111111',
     marginBottom: 4,
   },
   input: {
-    backgroundColor: '#252525',
+    backgroundColor: '#FFFFFF',
     borderRadius: 10,
     paddingHorizontal: 16,
     paddingVertical: 14,
     fontSize: 16,
-    color: '#FFFFFF',
+    color: '#111111',
     borderWidth: 1,
-    borderColor: '#2A2A2A',
+    borderColor: '#E5E5E5',
   },
   submitBtn: {
-    backgroundColor: '#00C853',
+    backgroundColor: '#111111',
     borderRadius: 12,
     paddingVertical: 16,
     alignItems: 'center',
     marginTop: 4,
   },
   submitBtnDisabled: {
-    opacity: 0.6,
+    opacity: 0.5,
   },
   submitText: {
-    color: '#000',
+    color: '#FFFFFF',
     fontWeight: '700',
     fontSize: 16,
   },
@@ -179,7 +177,7 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
   },
   toggleText: {
-    color: '#00C853',
+    color: '#666666',
     fontSize: 14,
   },
 });

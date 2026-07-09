@@ -53,7 +53,7 @@ function FoodItem({ item, onDelete }: { item: FoodEntry; onDelete: (id: string) 
         <Text style={styles.itemCalories}>{Math.round(Number(item.calories))}</Text>
         <Text style={styles.itemKcal}>kcal</Text>
         <TouchableOpacity onPress={handleDelete} style={styles.deleteBtn}>
-          <Ionicons name="trash-outline" size={18} color="#FF5252" />
+          <Ionicons name="trash-outline" size={18} color="#FF3B30" />
         </TouchableOpacity>
       </View>
     </View>
@@ -120,7 +120,7 @@ export default function LogScreen() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            tintColor="#00C853"
+            tintColor="#111111"
           />
         }
         contentContainerStyle={
@@ -128,7 +128,7 @@ export default function LogScreen() {
         }
         ListEmptyComponent={
           <View style={styles.empty}>
-            <Ionicons name="restaurant-outline" size={64} color="#333" />
+            <Ionicons name="restaurant-outline" size={64} color="#DDDDDD" />
             <Text style={styles.emptyTitle}>No entries yet</Text>
             <Text style={styles.emptySubtitle}>
               Tap the Add tab to log your first meal today
@@ -143,7 +143,7 @@ export default function LogScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0F0F0F',
+    backgroundColor: '#FFFFFF',
   },
   header: {
     flexDirection: 'row',
@@ -155,18 +155,18 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 26,
     fontWeight: '800',
-    color: '#FFFFFF',
+    color: '#111111',
   },
   totalBadge: {
-    backgroundColor: '#1A1A1A',
+    backgroundColor: '#F5F5F5',
     borderRadius: 20,
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderWidth: 1,
-    borderColor: '#00C853',
+    borderColor: '#E5E5E5',
   },
   totalText: {
-    color: '#00C853',
+    color: '#111111',
     fontWeight: '700',
     fontSize: 14,
   },
@@ -187,16 +187,16 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#444',
+    color: '#CCCCCC',
   },
   emptySubtitle: {
     fontSize: 14,
-    color: '#333',
+    color: '#CCCCCC',
     textAlign: 'center',
     paddingHorizontal: 40,
   },
   itemContainer: {
-    backgroundColor: '#1A1A1A',
+    backgroundColor: '#F5F5F5',
     borderRadius: 12,
     padding: 14,
     flexDirection: 'row',
@@ -209,21 +209,21 @@ const styles = StyleSheet.create({
   itemName: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#FFFFFF',
+    color: '#111111',
     marginBottom: 4,
   },
   itemMacros: {
     fontSize: 11,
-    color: '#888',
+    color: '#999999',
   },
   itemServing: {
     fontSize: 11,
-    color: '#666',
+    color: '#AAAAAA',
     marginTop: 2,
   },
   itemTime: {
     fontSize: 11,
-    color: '#555',
+    color: '#BBBBBB',
     marginTop: 4,
   },
   itemRight: {
@@ -233,11 +233,11 @@ const styles = StyleSheet.create({
   itemCalories: {
     fontSize: 22,
     fontWeight: '800',
-    color: '#00C853',
+    color: '#111111',
   },
   itemKcal: {
     fontSize: 10,
-    color: '#555',
+    color: '#AAAAAA',
   },
   deleteBtn: {
     marginTop: 8,

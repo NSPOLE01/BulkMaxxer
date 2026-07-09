@@ -63,7 +63,7 @@ export default function ScanScreen() {
   if (!permission) {
     return (
       <View style={[styles.container, styles.center]}>
-        <ActivityIndicator color="#00C853" size="large" />
+        <ActivityIndicator color="#FFFFFF" size="large" />
       </View>
     );
   }
@@ -118,12 +118,12 @@ export default function ScanScreen() {
         <View style={styles.overlayBottom}>
           {loading ? (
             <View style={styles.loadingBox}>
-              <ActivityIndicator color="#00C853" />
+              <ActivityIndicator color="#FFFFFF" />
               <Text style={styles.loadingText}>Looking up product...</Text>
             </View>
           ) : scanned ? (
             <View style={styles.loadingBox}>
-              <ActivityIndicator color="#00C853" />
+              <ActivityIndicator color="#FFFFFF" />
               <Text style={styles.loadingText}>Processing...</Text>
             </View>
           ) : (
@@ -157,27 +157,27 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     gap: 16,
-    backgroundColor: '#0F0F0F',
+    backgroundColor: '#FFFFFF',
   },
   permTitle: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: '#111111',
   },
   permSubtitle: {
     fontSize: 14,
-    color: '#888',
+    color: '#999999',
     textAlign: 'center',
     paddingHorizontal: 32,
   },
   permBtn: {
-    backgroundColor: '#00C853',
+    backgroundColor: '#111111',
     borderRadius: 12,
     paddingHorizontal: 24,
     paddingVertical: 14,
   },
   permBtnText: {
-    color: '#000',
+    color: '#FFFFFF',
     fontWeight: '700',
     fontSize: 16,
   },
@@ -206,7 +206,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width: CORNER_SIZE,
     height: CORNER_SIZE,
-    borderColor: '#00C853',
+    borderColor: '#FFFFFF',
   },
   cornerTL: {
     top: 0,
@@ -259,13 +259,13 @@ const styles = StyleSheet.create({
   },
   resetBtn: {
     borderWidth: 1,
-    borderColor: '#00C853',
+    borderColor: '#FFFFFF',
     borderRadius: 20,
     paddingHorizontal: 20,
     paddingVertical: 10,
   },
   resetText: {
-    color: '#00C853',
+    color: '#FFFFFF',
     fontSize: 14,
     fontWeight: '600',
   },

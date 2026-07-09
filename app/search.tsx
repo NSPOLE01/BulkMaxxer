@@ -57,7 +57,7 @@ export default function SearchScreen() {
         <TextInput
           style={styles.input}
           placeholder="Search for a food..."
-          placeholderTextColor="#555"
+          placeholderTextColor="#AAAAAA"
           value={query}
           onChangeText={setQuery}
           returnKeyType="search"
@@ -71,16 +71,16 @@ export default function SearchScreen() {
           activeOpacity={0.8}
         >
           {loading ? (
-            <ActivityIndicator color="#000" size="small" />
+            <ActivityIndicator color="#FFFFFF" size="small" />
           ) : (
-            <Ionicons name="search" size={20} color="#000" />
+            <Ionicons name="search" size={20} color="#FFFFFF" />
           )}
         </TouchableOpacity>
       </View>
 
       {loading ? (
         <View style={styles.center}>
-          <ActivityIndicator color="#00C853" size="large" />
+          <ActivityIndicator color="#111111" size="large" />
           <Text style={styles.loadingText}>Searching...</Text>
         </View>
       ) : (
@@ -115,13 +115,13 @@ export default function SearchScreen() {
           ListEmptyComponent={
             searched ? (
               <View style={styles.empty}>
-                <Ionicons name="search-outline" size={48} color="#333" />
+                <Ionicons name="search-outline" size={48} color="#DDDDDD" />
                 <Text style={styles.emptyTitle}>No results found</Text>
                 <Text style={styles.emptySubtitle}>Try a different search term</Text>
               </View>
             ) : (
               <View style={styles.empty}>
-                <Ionicons name="nutrition-outline" size={48} color="#333" />
+                <Ionicons name="nutrition-outline" size={48} color="#DDDDDD" />
                 <Text style={styles.emptyTitle}>Search for any food</Text>
                 <Text style={styles.emptySubtitle}>
                   Powered by Open Food Facts database
@@ -138,7 +138,7 @@ export default function SearchScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0F0F0F',
+    backgroundColor: '#FFFFFF',
   },
   searchRow: {
     flexDirection: 'row',
@@ -148,17 +148,17 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    backgroundColor: '#1A1A1A',
+    backgroundColor: '#F5F5F5',
     borderRadius: 10,
     paddingHorizontal: 14,
     paddingVertical: 12,
     fontSize: 16,
-    color: '#FFFFFF',
+    color: '#111111',
     borderWidth: 1,
-    borderColor: '#2A2A2A',
+    borderColor: '#E5E5E5',
   },
   searchBtn: {
-    backgroundColor: '#00C853',
+    backgroundColor: '#111111',
     borderRadius: 10,
     width: 48,
     justifyContent: 'center',
@@ -171,7 +171,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   loadingText: {
-    color: '#888',
+    color: '#999999',
     fontSize: 14,
   },
   list: {
@@ -192,14 +192,14 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#444',
+    color: '#CCCCCC',
   },
   emptySubtitle: {
     fontSize: 13,
-    color: '#333',
+    color: '#CCCCCC',
   },
   resultItem: {
-    backgroundColor: '#1A1A1A',
+    backgroundColor: '#F5F5F5',
     borderRadius: 12,
     padding: 14,
     flexDirection: 'row',
@@ -212,16 +212,16 @@ const styles = StyleSheet.create({
   resultName: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#FFFFFF',
+    color: '#111111',
     marginBottom: 4,
   },
   resultMacros: {
     fontSize: 11,
-    color: '#888',
+    color: '#999999',
   },
   resultServing: {
     fontSize: 11,
-    color: '#666',
+    color: '#AAAAAA',
     marginTop: 2,
   },
   resultRight: {
@@ -230,10 +230,10 @@ const styles = StyleSheet.create({
   resultCalories: {
     fontSize: 22,
     fontWeight: '800',
-    color: '#00C853',
+    color: '#111111',
   },
   resultKcal: {
     fontSize: 10,
-    color: '#555',
+    color: '#AAAAAA',
   },
 });

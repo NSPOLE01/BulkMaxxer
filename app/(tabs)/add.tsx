@@ -14,13 +14,13 @@ function OptionCard({ icon, title, description, onPress }: OptionCardProps) {
   return (
     <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.75}>
       <View style={styles.iconBox}>
-        <Ionicons name={icon} size={32} color="#00C853" />
+        <Ionicons name={icon} size={32} color="#111111" />
       </View>
       <View style={styles.cardText}>
         <Text style={styles.cardTitle}>{title}</Text>
         <Text style={styles.cardDesc}>{description}</Text>
       </View>
-      <Ionicons name="chevron-forward" size={20} color="#444" />
+      <Ionicons name="chevron-forward" size={20} color="#AAAAAA" />
     </TouchableOpacity>
   );
 }
@@ -62,7 +62,7 @@ export default function AddScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0F0F0F',
+    backgroundColor: '#FFFFFF',
   },
   header: {
     paddingHorizontal: 20,
@@ -71,11 +71,11 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 26,
     fontWeight: '800',
-    color: '#FFFFFF',
+    color: '#111111',
   },
   subtitle: {
     fontSize: 14,
-    color: '#888',
+    color: '#999999',
     marginTop: 4,
   },
   cards: {
@@ -83,7 +83,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   card: {
-    backgroundColor: '#1A1A1A',
+    backgroundColor: '#F5F5F5',
     borderRadius: 16,
     padding: 20,
     flexDirection: 'row',
@@ -94,7 +94,7 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 14,
-    backgroundColor: '#0F2A1A',
+    backgroundColor: '#E8E8E8',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -104,11 +104,11 @@ const styles = StyleSheet.create({
   cardTitle: {
     fontSize: 17,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: '#111111',
     marginBottom: 3,
   },
   cardDesc: {
     fontSize: 13,
-    color: '#777',
+    color: '#999999',
   },
 });

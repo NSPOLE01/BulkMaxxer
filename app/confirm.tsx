@@ -93,7 +93,6 @@ export default function ConfirmScreen() {
         contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 24 }]}
         keyboardShouldPersistTaps="handled"
       >
-        {/* Food Name */}
         <View style={styles.nameSection}>
           <Text style={styles.sectionLabel}>FOOD NAME</Text>
           <TextInput
@@ -101,12 +100,11 @@ export default function ConfirmScreen() {
             value={name}
             onChangeText={setName}
             placeholder="Food name"
-            placeholderTextColor="#555"
+            placeholderTextColor="#AAAAAA"
             returnKeyType="next"
           />
         </View>
 
-        {/* Serving Size */}
         <View style={styles.fieldGroup}>
           <Text style={styles.label}>Serving Size</Text>
           <TextInput
@@ -114,12 +112,11 @@ export default function ConfirmScreen() {
             value={servingSize}
             onChangeText={setServingSize}
             placeholder="e.g. 100g, 1 cup"
-            placeholderTextColor="#555"
+            placeholderTextColor="#AAAAAA"
             returnKeyType="next"
           />
         </View>
 
-        {/* Macros */}
         <View style={styles.macroSection}>
           <Text style={styles.sectionLabel}>NUTRITION PER SERVING</Text>
           {EDITABLE_FIELDS.map((field) => (
@@ -139,9 +136,8 @@ export default function ConfirmScreen() {
           ))}
         </View>
 
-        {/* Preview Card */}
         <View style={styles.preview}>
-          <Text style={styles.previewTitle}>Summary</Text>
+          <Text style={styles.previewTitle}>SUMMARY</Text>
           <View style={styles.previewRow}>
             <Text style={styles.previewFood} numberOfLines={2}>
               {name || 'Food name'}
@@ -168,7 +164,7 @@ export default function ConfirmScreen() {
           activeOpacity={0.8}
         >
           {loading ? (
-            <ActivityIndicator color="#000" />
+            <ActivityIndicator color="#FFFFFF" />
           ) : (
             <Text style={styles.logBtnText}>Log Food</Text>
           )}
@@ -181,7 +177,7 @@ export default function ConfirmScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0F0F0F',
+    backgroundColor: '#FFFFFF',
   },
   content: {
     paddingHorizontal: 16,
@@ -194,20 +190,20 @@ const styles = StyleSheet.create({
   sectionLabel: {
     fontSize: 11,
     fontWeight: '700',
-    color: '#555',
+    color: '#AAAAAA',
     letterSpacing: 1,
     marginBottom: 2,
   },
   nameInput: {
-    backgroundColor: '#1A1A1A',
+    backgroundColor: '#F5F5F5',
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 14,
     fontSize: 18,
     fontWeight: '600',
-    color: '#FFFFFF',
+    color: '#111111',
     borderWidth: 1,
-    borderColor: '#2A2A2A',
+    borderColor: '#E5E5E5',
   },
   fieldGroup: {
     gap: 6,
@@ -215,20 +211,20 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#AAAAAA',
+    color: '#666666',
   },
   input: {
-    backgroundColor: '#1A1A1A',
+    backgroundColor: '#F5F5F5',
     borderRadius: 10,
     paddingHorizontal: 14,
     paddingVertical: 12,
     fontSize: 15,
-    color: '#FFFFFF',
+    color: '#111111',
     borderWidth: 1,
-    borderColor: '#2A2A2A',
+    borderColor: '#E5E5E5',
   },
   macroSection: {
-    backgroundColor: '#1A1A1A',
+    backgroundColor: '#F5F5F5',
     borderRadius: 16,
     padding: 16,
     gap: 12,
@@ -240,7 +236,7 @@ const styles = StyleSheet.create({
   },
   macroLabel: {
     fontSize: 15,
-    color: '#CCCCCC',
+    color: '#444444',
     flex: 1,
   },
   macroInputRow: {
@@ -249,33 +245,33 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   macroInput: {
-    backgroundColor: '#252525',
+    backgroundColor: '#FFFFFF',
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 8,
     fontSize: 15,
-    color: '#FFFFFF',
+    color: '#111111',
     width: 80,
     textAlign: 'right',
     borderWidth: 1,
-    borderColor: '#333',
+    borderColor: '#E5E5E5',
   },
   macroUnit: {
-    color: '#888',
+    color: '#999999',
     fontSize: 13,
     width: 30,
   },
   preview: {
-    backgroundColor: '#1A1A1A',
+    backgroundColor: '#F5F5F5',
     borderRadius: 16,
     padding: 16,
     borderWidth: 1,
-    borderColor: '#00C853',
+    borderColor: '#E5E5E5',
   },
   previewTitle: {
     fontSize: 11,
     fontWeight: '700',
-    color: '#00C853',
+    color: '#AAAAAA',
     letterSpacing: 1,
     marginBottom: 10,
   },
@@ -288,7 +284,7 @@ const styles = StyleSheet.create({
   previewFood: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: '#111111',
     flex: 1,
   },
   previewCalories: {
@@ -297,29 +293,29 @@ const styles = StyleSheet.create({
   previewCalNum: {
     fontSize: 28,
     fontWeight: '800',
-    color: '#00C853',
+    color: '#111111',
   },
   previewKcal: {
     fontSize: 10,
-    color: '#555',
+    color: '#AAAAAA',
     marginTop: -4,
   },
   previewMacros: {
     fontSize: 12,
-    color: '#888',
+    color: '#999999',
     marginTop: 6,
   },
   logBtn: {
-    backgroundColor: '#00C853',
+    backgroundColor: '#111111',
     borderRadius: 14,
     paddingVertical: 18,
     alignItems: 'center',
   },
   logBtnDisabled: {
-    opacity: 0.6,
+    opacity: 0.5,
   },
   logBtnText: {
-    color: '#000',
+    color: '#FFFFFF',
     fontWeight: '700',
     fontSize: 17,
   },
