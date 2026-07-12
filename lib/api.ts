@@ -144,36 +144,42 @@ export async function deleteFoodEntry(id: string): Promise<void> {
   await deleteDoc(doc(db, 'food_log', id));
 }
 
-function getNutrimentValue(nutriments: Record<string, unknown>, key: string): number {
-  const val = nutriments?.[key];
-  return typeof val === 'number' ? Math.round(val * 10) / 10 : 0;
+interface UsdaNutrient {
+  nutrientId: number;
+  value: number;
+}
+
+function getNutrient(nutrients: UsdaNutrient[], id: number): number {
+  const match = nutrients.find((n) => n.nutrientId === id);
+  return match ? Math.round(match.value * 10) / 10 : 0;
 }
 
 export async function searchFood(query: string): Promise<FoodResult[]> {
-  const url = `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(
-    query
-  )}&json=1&page_size=10`;
+  const key = process.env.EXPO_PUBLIC_USDA_API_KEY ?? '';
+  const url = `https://api.nal.usda.gov/fdc/v1/foods/search?query=${encodeURIComponent(query)}&pageSize=15&api_key=${key}`;
 
   const res = await fetch(url);
   if (!res.ok) throw new Error('Failed to search food database');
   const json = await res.json();
 
-  const products: FoodResult[] = [];
-  for (const p of json.products ?? []) {
-    const n = p.nutriments ?? {};
-    const name = p.product_name || p.product_name_en || '';
+  const results: FoodResult[] = [];
+  for (const food of json.foods ?? []) {
+    const name = food.description as string | undefined;
     if (!name) continue;
-    products.push({
-      name: String(name),
-      calories: getNutrimentValue(n, 'energy-kcal_100g'),
-      protein: getNutrimentValue(n, 'proteins_100g'),
-      sodium: getNutrimentValue(n, 'sodium_100g') * 1000,
-      sugar: getNutrimentValue(n, 'sugars_100g'),
-      fat: getNutrimentValue(n, 'fat_100g'),
-      serving_size: p.serving_size ?? p.quantity ?? undefined,
+    const nutrients: UsdaNutrient[] = food.foodNutrients ?? [];
+    results.push({
+      name,
+      calories: getNutrient(nutrients, 1008),  // Energy (kcal)
+      protein: getNutrient(nutrients, 1003),   // Protein
+      fat: getNutrient(nutrients, 1004),       // Total lipid (fat)
+      sugar: getNutrient(nutrients, 2000),     // Sugars, total
+      sodium: getNutrient(nutrients, 1093),    // Sodium (mg)
+      serving_size: food.servingSize
+        ? `${food.servingSize}${food.servingSizeUnit ?? 'g'}`
+        : undefined,
     });
   }
-  return products;
+  return results;
 }
 
 export async function lookupBarcode(barcode: string): Promise<FoodResult | null> {
