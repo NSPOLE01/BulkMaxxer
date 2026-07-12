@@ -58,7 +58,7 @@ export default function LoginScreen() {
 
           <View style={styles.card}>
             <Text style={styles.cardTitle}>
-              {mode === 'signin' ? 'Welcome back' : 'Create account'}
+              {mode === 'signin' ? 'Welcome Back' : 'Create Account'}
             </Text>
 
             <TextInput
@@ -149,6 +149,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#111111',
     marginBottom: 4,
+    textAlign: 'center',
   },
   input: {
     backgroundColor: '#F5F5F5',
