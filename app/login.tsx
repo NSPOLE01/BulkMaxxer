@@ -127,9 +127,8 @@ const styles = StyleSheet.create({
   },
   inner: {
     flex: 1,
-    justifyContent: 'flex-end',
+    justifyContent: 'center',
     paddingHorizontal: 20,
-    paddingBottom: 32,
     gap: 28,
   },
   appName: {
@@ -137,6 +136,7 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     color: '#FFFFFF',
     letterSpacing: -1,
+    textAlign: 'center',
   },
   card: {
     backgroundColor: '#FFFFFF',
