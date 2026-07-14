@@ -11,9 +11,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BarChart } from 'react-native-gifted-charts';
 import { useAuth } from '../../lib/auth';
 import { getTodayLog, getWeekLog, FoodEntry, WeekDay } from '../../lib/api';
+import { getCalorieGoal } from '../../lib/goals';
 import { useFocusEffect } from 'expo-router';
 
-const CALORIE_GOAL = 2000;
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
 function CalorieRing({ consumed, goal }: { consumed: number; goal: number }) {
@@ -57,17 +57,20 @@ export default function DashboardScreen() {
   const insets = useSafeAreaInsets();
   const [entries, setEntries] = useState<FoodEntry[]>([]);
   const [weekData, setWeekData] = useState<WeekDay[]>([]);
+  const [calorieGoal, setCalorieGoal] = useState(2000);
   const [refreshing, setRefreshing] = useState(false);
 
   const loadData = useCallback(async () => {
     if (!user) return;
     try {
-      const [todayEntries, week] = await Promise.all([
+      const [todayEntries, week, goal] = await Promise.all([
         getTodayLog(user.uid),
         getWeekLog(user.uid),
+        getCalorieGoal(),
       ]);
       setEntries(todayEntries);
       setWeekData(week);
+      setCalorieGoal(goal);
     } catch (e) {
       console.error('Failed to load dashboard data', e);
     }
@@ -121,7 +124,7 @@ export default function DashboardScreen() {
         <Text style={styles.dateText}>{today}</Text>
       </View>
 
-      <CalorieRing consumed={totalCalories} goal={CALORIE_GOAL} />
+      <CalorieRing consumed={totalCalories} goal={calorieGoal} />
 
       <View style={styles.macroRow}>
         <MacroCard label="Protein" value={totalProtein} unit="g" />
@@ -147,7 +150,7 @@ export default function DashboardScreen() {
               yAxisTextStyle={{ color: '#AAAAAA', fontSize: 10 }}
               xAxisLabelTextStyle={{ color: '#AAAAAA', fontSize: 10 }}
               noOfSections={4}
-              maxValue={Math.max(...barData.map((d) => d.value), CALORIE_GOAL) + 200}
+              maxValue={Math.max(...barData.map((d) => d.value), calorieGoal) + 200}
               width={SCREEN_WIDTH - 64}
               height={180}
               isAnimated
@@ -158,7 +161,7 @@ export default function DashboardScreen() {
             <Text style={styles.emptyText}>No data yet this week</Text>
           </View>
         )}
-        <Text style={styles.goalLine}>Daily goal: {CALORIE_GOAL} kcal</Text>
+        <Text style={styles.goalLine}>Daily goal: {calorieGoal} kcal</Text>
       </View>
     </ScrollView>
   );

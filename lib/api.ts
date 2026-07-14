@@ -182,6 +182,11 @@ export async function searchFood(query: string): Promise<FoodResult[]> {
   return results;
 }
 
+function getNutrimentValue(nutriments: Record<string, unknown>, key: string): number {
+  const val = nutriments?.[key];
+  return typeof val === 'number' ? Math.round(val * 10) / 10 : 0;
+}
+
 export async function lookupBarcode(barcode: string): Promise<FoodResult | null> {
   const url = `https://world.openfoodfacts.org/api/v0/product/${barcode}.json`;
 
