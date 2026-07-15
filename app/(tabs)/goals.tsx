@@ -10,49 +10,58 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect } from 'expo-router';
-import { getCalorieGoal, saveCalorieGoal } from '../../lib/goals';
+import { getCalorieGoal, saveCalorieGoal, getWeightGoal, saveWeightGoal } from '../../lib/goals';
 
 const PRESETS = [1500, 1800, 2000, 2200, 2500];
 
 export default function GoalsScreen() {
   const insets = useSafeAreaInsets();
-  const [input, setInput] = useState('');
+  const [calorieInput, setCalorieInput] = useState('');
+  const [weightInput, setWeightInput] = useState('');
   const [saved, setSaved] = useState(false);
   const [loading, setLoading] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
-      getCalorieGoal().then((goal) => setInput(String(goal)));
+      Promise.all([getCalorieGoal(), getWeightGoal()]).then(([cal, weight]) => {
+        setCalorieInput(String(cal));
+        setWeightInput(weight !== null ? String(weight) : '');
+      });
       setSaved(false);
     }, [])
   );
 
   const handleSave = async () => {
-    const val = Number(input);
-    if (!input || isNaN(val) || val < 500 || val > 10000) {
+    const cal = Number(calorieInput);
+    if (!calorieInput || isNaN(cal) || cal < 500 || cal > 10000) {
       Alert.alert('Invalid Goal', 'Please enter a calorie goal between 500 and 10,000.');
+      return;
+    }
+    if (weightInput && (isNaN(Number(weightInput)) || Number(weightInput) <= 0)) {
+      Alert.alert('Invalid Goal', 'Please enter a valid target weight.');
       return;
     }
     setLoading(true);
     try {
-      await saveCalorieGoal(val);
+      await saveCalorieGoal(cal);
+      if (weightInput) await saveWeightGoal(Number(weightInput));
       setSaved(true);
     } catch {
-      Alert.alert('Error', 'Failed to save goal. Please try again.');
+      Alert.alert('Error', 'Failed to save goals. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
   const handlePreset = (val: number) => {
-    setInput(String(val));
+    setCalorieInput(String(val));
     setSaved(false);
   };
 
   const adjust = (delta: number) => {
-    const current = Number(input) || 2000;
+    const current = Number(calorieInput) || 2000;
     const next = Math.min(10000, Math.max(500, current + delta));
-    setInput(String(next));
+    setCalorieInput(String(next));
     setSaved(false);
   };
 
@@ -63,6 +72,26 @@ export default function GoalsScreen() {
       </View>
 
       <View style={styles.centered}>
+        {/* Target Weight */}
+        <View style={styles.section}>
+          <Text style={styles.sectionLabel}>TARGET WEIGHT</Text>
+          <View style={styles.weightRow}>
+            <TextInput
+              style={styles.weightInput}
+              value={weightInput}
+              onChangeText={(v) => { setWeightInput(v); setSaved(false); }}
+              keyboardType="decimal-pad"
+              returnKeyType="done"
+              placeholder="0"
+              placeholderTextColor="#CCCCCC"
+              maxLength={6}
+              selectTextOnFocus
+            />
+            <Text style={styles.weightUnit}>lbs</Text>
+          </View>
+        </View>
+
+        {/* Daily Calorie Target */}
         <View style={styles.section}>
           <Text style={styles.sectionLabel}>DAILY CALORIE TARGET</Text>
 
@@ -73,8 +102,8 @@ export default function GoalsScreen() {
 
             <TextInput
               style={styles.goalInput}
-              value={input}
-              onChangeText={(v) => { setInput(v); setSaved(false); }}
+              value={calorieInput}
+              onChangeText={(v) => { setCalorieInput(v); setSaved(false); }}
               keyboardType="number-pad"
               returnKeyType="done"
               maxLength={5}
@@ -92,11 +121,11 @@ export default function GoalsScreen() {
             {PRESETS.map((p) => (
               <TouchableOpacity
                 key={p}
-                style={[styles.presetBtn, Number(input) === p && styles.presetBtnActive]}
+                style={[styles.presetBtn, Number(calorieInput) === p && styles.presetBtnActive]}
                 onPress={() => handlePreset(p)}
                 activeOpacity={0.7}
               >
-                <Text style={[styles.presetText, Number(input) === p && styles.presetTextActive]}>
+                <Text style={[styles.presetText, Number(calorieInput) === p && styles.presetTextActive]}>
                   {p}
                 </Text>
               </TouchableOpacity>
@@ -140,6 +169,7 @@ const styles = StyleSheet.create({
   centered: {
     flex: 1,
     justifyContent: 'center',
+    gap: 12,
   },
   section: {
     marginHorizontal: 16,
@@ -155,6 +185,24 @@ const styles = StyleSheet.create({
     color: '#AAAAAA',
     letterSpacing: 1,
     alignSelf: 'flex-start',
+  },
+  weightRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    gap: 8,
+  },
+  weightInput: {
+    fontSize: 52,
+    fontWeight: '800',
+    color: '#111111',
+    minWidth: 120,
+    textAlign: 'center',
+    letterSpacing: -1,
+  },
+  weightUnit: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#999999',
   },
   stepper: {
     flexDirection: 'row',
