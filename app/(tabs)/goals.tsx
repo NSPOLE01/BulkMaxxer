@@ -62,44 +62,46 @@ export default function GoalsScreen() {
         <Text style={styles.title}>Goals</Text>
       </View>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionLabel}>DAILY CALORIE TARGET</Text>
+      <View style={styles.centered}>
+        <View style={styles.section}>
+          <Text style={styles.sectionLabel}>DAILY CALORIE TARGET</Text>
 
-        <View style={styles.stepper}>
-          <TouchableOpacity style={styles.stepBtn} onPress={() => adjust(-50)} activeOpacity={0.7}>
-            <Text style={styles.stepBtnText}>−</Text>
-          </TouchableOpacity>
-
-          <TextInput
-            style={styles.goalInput}
-            value={input}
-            onChangeText={(v) => { setInput(v); setSaved(false); }}
-            keyboardType="number-pad"
-            returnKeyType="done"
-            maxLength={5}
-            selectTextOnFocus
-          />
-
-          <TouchableOpacity style={styles.stepBtn} onPress={() => adjust(50)} activeOpacity={0.7}>
-            <Text style={styles.stepBtnText}>+</Text>
-          </TouchableOpacity>
-        </View>
-
-        <Text style={styles.unit}>kcal / day</Text>
-
-        <View style={styles.presets}>
-          {PRESETS.map((p) => (
-            <TouchableOpacity
-              key={p}
-              style={[styles.presetBtn, Number(input) === p && styles.presetBtnActive]}
-              onPress={() => handlePreset(p)}
-              activeOpacity={0.7}
-            >
-              <Text style={[styles.presetText, Number(input) === p && styles.presetTextActive]}>
-                {p}
-              </Text>
+          <View style={styles.stepper}>
+            <TouchableOpacity style={styles.stepBtn} onPress={() => adjust(-50)} activeOpacity={0.7}>
+              <Text style={styles.stepBtnText}>-</Text>
             </TouchableOpacity>
-          ))}
+
+            <TextInput
+              style={styles.goalInput}
+              value={input}
+              onChangeText={(v) => { setInput(v); setSaved(false); }}
+              keyboardType="number-pad"
+              returnKeyType="done"
+              maxLength={5}
+              selectTextOnFocus
+            />
+
+            <TouchableOpacity style={styles.stepBtn} onPress={() => adjust(50)} activeOpacity={0.7}>
+              <Text style={styles.stepBtnText}>+</Text>
+            </TouchableOpacity>
+          </View>
+
+          <Text style={styles.unit}>kcal / day</Text>
+
+          <View style={styles.presets}>
+            {PRESETS.map((p) => (
+              <TouchableOpacity
+                key={p}
+                style={[styles.presetBtn, Number(input) === p && styles.presetBtnActive]}
+                onPress={() => handlePreset(p)}
+                activeOpacity={0.7}
+              >
+                <Text style={[styles.presetText, Number(input) === p && styles.presetTextActive]}>
+                  {p}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
         </View>
       </View>
 
@@ -113,7 +115,7 @@ export default function GoalsScreen() {
           {loading ? (
             <ActivityIndicator color="#FFFFFF" />
           ) : (
-            <Text style={styles.saveBtnText}>{saved ? 'Saved ✓' : 'Save Goal'}</Text>
+            <Text style={styles.saveBtnText}>{saved ? 'Saved' : 'Save Goal'}</Text>
           )}
         </TouchableOpacity>
       </View>
@@ -134,6 +136,10 @@ const styles = StyleSheet.create({
     fontSize: 26,
     fontWeight: '800',
     color: '#111111',
+  },
+  centered: {
+    flex: 1,
+    justifyContent: 'center',
   },
   section: {
     marginHorizontal: 16,
@@ -209,7 +215,6 @@ const styles = StyleSheet.create({
   },
   footer: {
     padding: 16,
-    marginTop: 'auto',
   },
   saveBtn: {
     backgroundColor: '#111111',
