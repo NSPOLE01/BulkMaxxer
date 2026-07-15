@@ -7,6 +7,7 @@ import {
   StyleSheet,
   Alert,
   ActivityIndicator,
+  ScrollView,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect } from 'expo-router';
@@ -71,7 +72,12 @@ export default function GoalsScreen() {
         <Text style={styles.title}>Goals</Text>
       </View>
 
-      <View style={styles.centered}>
+      <ScrollView
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 16 }]}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
+        automaticallyAdjustKeyboardInsets
+      >
         {/* Target Weight */}
         <View style={styles.section}>
           <Text style={styles.sectionLabel}>TARGET WEIGHT</Text>
@@ -132,9 +138,7 @@ export default function GoalsScreen() {
             ))}
           </View>
         </View>
-      </View>
 
-      <View style={styles.footer}>
         <TouchableOpacity
           style={[styles.saveBtn, loading && styles.saveBtnDisabled]}
           onPress={handleSave}
@@ -147,7 +151,7 @@ export default function GoalsScreen() {
             <Text style={styles.saveBtnText}>{saved ? 'Saved' : 'Save Goal'}</Text>
           )}
         </TouchableOpacity>
-      </View>
+      </ScrollView>
     </View>
   );
 }
@@ -166,13 +170,13 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     color: '#111111',
   },
-  centered: {
-    flex: 1,
-    justifyContent: 'center',
+  scrollContent: {
+    paddingHorizontal: 16,
     gap: 12,
+    flexGrow: 1,
+    justifyContent: 'center',
   },
   section: {
-    marginHorizontal: 16,
     backgroundColor: '#F5F5F5',
     borderRadius: 20,
     padding: 24,
@@ -261,14 +265,12 @@ const styles = StyleSheet.create({
   presetTextActive: {
     color: '#FFFFFF',
   },
-  footer: {
-    padding: 16,
-  },
   saveBtn: {
     backgroundColor: '#111111',
     borderRadius: 14,
     paddingVertical: 18,
     alignItems: 'center',
+    marginTop: 8,
   },
   saveBtnDisabled: {
     opacity: 0.5,
