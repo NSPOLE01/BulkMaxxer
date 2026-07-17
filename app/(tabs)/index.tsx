@@ -8,10 +8,10 @@ import {
   Dimensions,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { BarChart } from 'react-native-gifted-charts';
+import { BarChart, LineChart } from 'react-native-gifted-charts';
 import { useAuth } from '../../lib/auth';
-import { getTodayLog, getWeekLog, FoodEntry, WeekDay } from '../../lib/api';
-import { getCalorieGoal } from '../../lib/goals';
+import { getTodayLog, getWeekLog, getWeightHistory, FoodEntry, WeekDay, WeightEntry } from '../../lib/api';
+import { getCalorieGoal, getWeightGoal } from '../../lib/goals';
 import { useFocusEffect } from 'expo-router';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -57,20 +57,26 @@ export default function DashboardScreen() {
   const insets = useSafeAreaInsets();
   const [entries, setEntries] = useState<FoodEntry[]>([]);
   const [weekData, setWeekData] = useState<WeekDay[]>([]);
+  const [weightHistory, setWeightHistory] = useState<WeightEntry[]>([]);
   const [calorieGoal, setCalorieGoal] = useState(2000);
+  const [weightGoal, setWeightGoal] = useState<number | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
   const loadData = useCallback(async () => {
     if (!user) return;
     try {
-      const [todayEntries, week, goal] = await Promise.all([
+      const [todayEntries, week, goal, wGoal, wHistory] = await Promise.all([
         getTodayLog(user.uid),
         getWeekLog(user.uid),
         getCalorieGoal(),
+        getWeightGoal(),
+        getWeightHistory(user.uid, 30),
       ]);
       setEntries(todayEntries);
       setWeekData(week);
       setCalorieGoal(goal);
+      setWeightGoal(wGoal);
+      setWeightHistory(wHistory);
     } catch (e) {
       console.error('Failed to load dashboard data', e);
     }
@@ -163,6 +169,65 @@ export default function DashboardScreen() {
         )}
         <Text style={styles.goalLine}>Daily goal: {calorieGoal} kcal</Text>
       </View>
+
+      {(() => {
+        if (weightHistory.length === 0) return null;
+        const weightChartData = weightHistory.map((e) => ({
+          value: e.weight,
+          label: new Date(e.logged_at!).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric' }),
+        }));
+        const allW = weightHistory.map((e) => e.weight);
+        if (weightGoal) allW.push(weightGoal);
+        const minW = Math.min(...allW) - 5;
+        const maxW = Math.max(...allW) + 5;
+        const latest = weightHistory[weightHistory.length - 1];
+        return (
+          <View style={[styles.chartSection, { marginTop: 24 }]}>
+            <View style={styles.weightHeader}>
+              <Text style={styles.sectionTitle}>Weight — Past Month</Text>
+              <View style={styles.weightBadge}>
+                <Text style={styles.weightBadgeValue}>{latest.weight}</Text>
+                <Text style={styles.weightBadgeUnit}> lbs</Text>
+              </View>
+            </View>
+            <View style={styles.chartWrapper}>
+              <LineChart
+                data={weightChartData}
+                width={SCREEN_WIDTH - 96}
+                height={160}
+                color="#111111"
+                thickness={2}
+                dataPointsColor="#111111"
+                dataPointsRadius={4}
+                yAxisTextStyle={{ color: '#AAAAAA', fontSize: 10 }}
+                xAxisLabelTextStyle={{ color: '#AAAAAA', fontSize: 9 }}
+                yAxisThickness={0}
+                xAxisThickness={1}
+                xAxisColor="#E5E5E5"
+                hideRules
+                isAnimated
+                yAxisOffset={minW}
+                maxValue={maxW - minW}
+                noOfSections={4}
+                referenceLine1Position={weightGoal ? weightGoal - minW : undefined}
+                referenceLine1Config={weightGoal ? { color: '#CCCCCC', thickness: 1, width: SCREEN_WIDTH - 96 } : undefined}
+              />
+            </View>
+            {weightGoal ? (
+              <View style={styles.weightLegend}>
+                <View style={styles.legendItem}>
+                  <View style={[styles.legendDot, { backgroundColor: '#111111' }]} />
+                  <Text style={styles.goalLine}>Actual</Text>
+                </View>
+                <View style={styles.legendItem}>
+                  <View style={[styles.legendDot, { backgroundColor: '#CCCCCC' }]} />
+                  <Text style={styles.goalLine}>Target ({weightGoal} lbs)</Text>
+                </View>
+              </View>
+            ) : null}
+          </View>
+        );
+      })()}
     </ScrollView>
   );
 }
@@ -301,5 +366,41 @@ const styles = StyleSheet.create({
     fontSize: 12,
     textAlign: 'center',
     marginTop: 8,
+  },
+  weightHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 16,
+  },
+  weightBadge: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+  },
+  weightBadgeValue: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: '#111111',
+  },
+  weightBadgeUnit: {
+    fontSize: 13,
+    color: '#999999',
+    fontWeight: '500',
+  },
+  weightLegend: {
+    flexDirection: 'row',
+    gap: 16,
+    marginTop: 8,
+    paddingHorizontal: 4,
+  },
+  legendItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  legendDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
   },
 });
