@@ -182,6 +182,46 @@ export async function searchFood(query: string): Promise<FoodResult[]> {
   return results;
 }
 
+export interface WeightEntry {
+  id?: string;
+  user_id?: string;
+  weight: number;
+  logged_at?: string;
+}
+
+export async function logWeight(userId: string, weight: number): Promise<void> {
+  await addDoc(collection(db, 'weight_log'), {
+    user_id: userId,
+    weight,
+    logged_at: Timestamp.fromDate(new Date()),
+    created_at: Timestamp.fromDate(new Date()),
+  });
+}
+
+export async function getWeightHistory(userId: string, days = 30): Promise<WeightEntry[]> {
+  const start = new Date();
+  start.setDate(start.getDate() - days);
+  start.setHours(0, 0, 0, 0);
+
+  const q = query(
+    collection(db, 'weight_log'),
+    where('user_id', '==', userId),
+    where('logged_at', '>=', Timestamp.fromDate(start)),
+    orderBy('logged_at', 'asc')
+  );
+
+  const snapshot = await getDocs(q);
+  return snapshot.docs.map((d) => {
+    const data = d.data();
+    return {
+      id: d.id,
+      user_id: data.user_id as string,
+      weight: Number(data.weight),
+      logged_at: (data.logged_at as Timestamp).toDate().toISOString(),
+    };
+  });
+}
+
 function getNutrimentValue(nutriments: Record<string, unknown>, key: string): number {
   const val = nutriments?.[key];
   return typeof val === 'number' ? Math.round(val * 10) / 10 : 0;
