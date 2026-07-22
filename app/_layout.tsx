@@ -16,15 +16,6 @@ export default function RootLayout() {
     }
   }, [user, loading]);
 
-  if (loading) {
-    return (
-      <View style={{ flex: 1, backgroundColor: '#FFFFFF', justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator color="#111111" size="large" />
-        <StatusBar style="dark" />
-      </View>
-    );
-  }
-
   return (
     <>
       <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: '#FFFFFF' } }}>
@@ -76,6 +67,11 @@ export default function RootLayout() {
         />
       </Stack>
       <StatusBar style="dark" />
+      {loading && (
+        <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: '#FFFFFF', justifyContent: 'center', alignItems: 'center' }}>
+          <ActivityIndicator color="#111111" size="large" />
+        </View>
+      )}
     </>
   );
 }
