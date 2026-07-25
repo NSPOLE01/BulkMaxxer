@@ -170,64 +170,70 @@ export default function DashboardScreen() {
         <Text style={styles.goalLine}>Daily goal: {calorieGoal} kcal</Text>
       </View>
 
-      {(() => {
-        if (weightHistory.length === 0) return null;
-        const weightChartData = weightHistory.map((e) => ({
-          value: e.weight,
-          label: new Date(e.logged_at!).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric' }),
-        }));
-        const allW = weightHistory.map((e) => e.weight);
-        if (weightGoal) allW.push(weightGoal);
-        const minW = Math.min(...allW) - 5;
-        const maxW = Math.max(...allW) + 5;
-        const latest = weightHistory[weightHistory.length - 1];
-        return (
-          <View style={[styles.chartSection, { marginTop: 24 }]}>
-            <View style={styles.weightHeader}>
-              <Text style={styles.sectionTitle}>Weight — Past Month</Text>
-              <View style={styles.weightBadge}>
-                <Text style={styles.weightBadgeValue}>{latest.weight}</Text>
-                <Text style={styles.weightBadgeUnit}> lbs</Text>
-              </View>
+      <View style={[styles.chartSection, { marginTop: 24 }]}>
+        <View style={styles.weightHeader}>
+          <Text style={styles.sectionTitle}>Weight — Past Month</Text>
+          {weightHistory.length > 0 && (
+            <View style={styles.weightBadge}>
+              <Text style={styles.weightBadgeValue}>{weightHistory[weightHistory.length - 1].weight}</Text>
+              <Text style={styles.weightBadgeUnit}> lbs</Text>
             </View>
-            <View style={styles.chartWrapper}>
-              <LineChart
-                data={weightChartData}
-                width={SCREEN_WIDTH - 96}
-                height={160}
-                color="#111111"
-                thickness={2}
-                dataPointsColor="#111111"
-                dataPointsRadius={4}
-                yAxisTextStyle={{ color: '#AAAAAA', fontSize: 10 }}
-                xAxisLabelTextStyle={{ color: '#AAAAAA', fontSize: 9 }}
-                yAxisThickness={0}
-                xAxisThickness={1}
-                xAxisColor="#E5E5E5"
-                hideRules
-                isAnimated
-                yAxisOffset={minW}
-                maxValue={maxW - minW}
-                noOfSections={4}
-                referenceLine1Position={weightGoal ? weightGoal - minW : undefined}
-                referenceLine1Config={weightGoal ? { color: '#CCCCCC', thickness: 1, width: SCREEN_WIDTH - 96 } : undefined}
-              />
-            </View>
-            {weightGoal ? (
-              <View style={styles.weightLegend}>
-                <View style={styles.legendItem}>
-                  <View style={[styles.legendDot, { backgroundColor: '#111111' }]} />
-                  <Text style={styles.goalLine}>Actual</Text>
-                </View>
-                <View style={styles.legendItem}>
-                  <View style={[styles.legendDot, { backgroundColor: '#CCCCCC' }]} />
-                  <Text style={styles.goalLine}>Target ({weightGoal} lbs)</Text>
-                </View>
+          )}
+        </View>
+        {weightHistory.length > 0 ? (() => {
+          const weightChartData = weightHistory.map((e) => ({
+            value: e.weight,
+            label: new Date(e.logged_at!).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric' }),
+          }));
+          const allW = weightHistory.map((e) => e.weight);
+          if (weightGoal) allW.push(weightGoal);
+          const minW = Math.min(...allW) - 5;
+          const maxW = Math.max(...allW) + 5;
+          return (
+            <>
+              <View style={styles.chartWrapper}>
+                <LineChart
+                  data={weightChartData}
+                  width={SCREEN_WIDTH - 96}
+                  height={180}
+                  color="#111111"
+                  thickness={2}
+                  dataPointsColor="#111111"
+                  dataPointsRadius={4}
+                  yAxisTextStyle={{ color: '#AAAAAA', fontSize: 10 }}
+                  xAxisLabelTextStyle={{ color: '#AAAAAA', fontSize: 9 }}
+                  yAxisThickness={0}
+                  xAxisThickness={1}
+                  xAxisColor="#E5E5E5"
+                  hideRules
+                  isAnimated
+                  yAxisOffset={minW}
+                  maxValue={maxW - minW}
+                  noOfSections={4}
+                  referenceLine1Position={weightGoal ? weightGoal - minW : undefined}
+                  referenceLine1Config={weightGoal ? { color: '#CCCCCC', thickness: 1, width: SCREEN_WIDTH - 96 } : undefined}
+                />
               </View>
-            ) : null}
+              {weightGoal ? (
+                <View style={styles.weightLegend}>
+                  <View style={styles.legendItem}>
+                    <View style={[styles.legendDot, { backgroundColor: '#111111' }]} />
+                    <Text style={styles.goalLine}>Actual</Text>
+                  </View>
+                  <View style={styles.legendItem}>
+                    <View style={[styles.legendDot, { backgroundColor: '#CCCCCC' }]} />
+                    <Text style={styles.goalLine}>Target ({weightGoal} lbs)</Text>
+                  </View>
+                </View>
+              ) : null}
+            </>
+          );
+        })() : (
+          <View style={styles.emptyChart}>
+            <Text style={styles.emptyText}>No weight logged yet</Text>
           </View>
-        );
-      })()}
+        )}
+      </View>
     </ScrollView>
   );
 }
