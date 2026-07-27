@@ -103,6 +103,11 @@ export default function GoalsScreen() {
     setSaved(false);
   };
 
+  const todayStr = new Date().toISOString().split('T')[0];
+  const hasLoggedToday = weightHistory.some(
+    (e) => e.logged_at && e.logged_at.split('T')[0] === todayStr
+  );
+
   const weightGoal = Number(weightGoalInput) || null;
   const chartData = weightHistory.map((e) => ({
     value: e.weight,
@@ -127,34 +132,44 @@ export default function GoalsScreen() {
         automaticallyAdjustKeyboardInsets
       >
         {/* Log Today's Weight */}
-        <View style={styles.section}>
-          <Text style={styles.sectionLabel}>LOG TODAY'S WEIGHT</Text>
-          <View style={styles.logRow}>
-            <TextInput
-              style={styles.logInput}
-              value={weightInput}
-              onChangeText={setWeightInput}
-              keyboardType="decimal-pad"
-              returnKeyType="done"
-              placeholder="e.g. 185"
-              placeholderTextColor="#CCCCCC"
-              maxLength={6}
-            />
-            <Text style={styles.logUnit}>lbs</Text>
-            <TouchableOpacity
-              style={[styles.logBtn, logging && styles.logBtnDisabled]}
-              onPress={handleLogWeight}
-              disabled={logging}
-              activeOpacity={0.8}
-            >
-              {logging ? (
-                <ActivityIndicator color="#FFFFFF" size="small" />
-              ) : (
-                <Text style={styles.logBtnText}>Log</Text>
-              )}
-            </TouchableOpacity>
+        {hasLoggedToday ? (
+          <View style={styles.section}>
+            <Text style={styles.sectionLabel}>TODAY'S WEIGHT</Text>
+            <Text style={styles.loggedText}>
+              {weightHistory[weightHistory.length - 1].weight} lbs — logged
+            </Text>
+            <Text style={styles.loggedSub}>Come back tomorrow to log again</Text>
           </View>
-        </View>
+        ) : (
+          <View style={styles.section}>
+            <Text style={styles.sectionLabel}>LOG TODAY'S WEIGHT</Text>
+            <View style={styles.logRow}>
+              <TextInput
+                style={styles.logInput}
+                value={weightInput}
+                onChangeText={setWeightInput}
+                keyboardType="decimal-pad"
+                returnKeyType="done"
+                placeholder="e.g. 185"
+                placeholderTextColor="#CCCCCC"
+                maxLength={6}
+              />
+              <Text style={styles.logUnit}>lbs</Text>
+              <TouchableOpacity
+                style={[styles.logBtn, logging && styles.logBtnDisabled]}
+                onPress={handleLogWeight}
+                disabled={logging}
+                activeOpacity={0.8}
+              >
+                {logging ? (
+                  <ActivityIndicator color="#FFFFFF" size="small" />
+                ) : (
+                  <Text style={styles.logBtnText}>Log</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
 
         {/* Weight History Chart */}
         {chartData.length > 0 && (
@@ -341,6 +356,17 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontWeight: '700',
     fontSize: 15,
+  },
+  loggedText: {
+    fontSize: 26,
+    fontWeight: '700',
+    color: '#111111',
+    alignSelf: 'flex-start',
+  },
+  loggedSub: {
+    fontSize: 13,
+    color: '#AAAAAA',
+    alignSelf: 'flex-start',
   },
   legendRow: {
     flexDirection: 'row',
