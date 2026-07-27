@@ -15,7 +15,7 @@ import { useFocusEffect } from 'expo-router';
 import { LineChart } from 'react-native-gifted-charts';
 import { useAuth } from '../../lib/auth';
 import { getCalorieGoal, saveCalorieGoal, getWeightGoal, saveWeightGoal } from '../../lib/goals';
-import { logWeight, getWeightHistory, WeightEntry } from '../../lib/api';
+import { getWeightHistory, WeightEntry } from '../../lib/api';
 
 const PRESETS = [1500, 1800, 2000, 2200, 2500];
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -26,11 +26,9 @@ export default function GoalsScreen() {
 
   const [calorieInput, setCalorieInput] = useState('');
   const [weightGoalInput, setWeightGoalInput] = useState('');
-  const [weightInput, setWeightInput] = useState('');
   const [weightHistory, setWeightHistory] = useState<WeightEntry[]>([]);
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [logging, setLogging] = useState(false);
 
   const loadData = useCallback(async () => {
     const [cal, weightGoal] = await Promise.all([getCalorieGoal(), getWeightGoal()]);
@@ -71,26 +69,6 @@ export default function GoalsScreen() {
     }
   };
 
-  const handleLogWeight = async () => {
-    if (!user) return;
-    const val = Number(weightInput);
-    if (!weightInput || isNaN(val) || val <= 0) {
-      Alert.alert('Invalid Weight', 'Please enter a valid weight.');
-      return;
-    }
-    setLogging(true);
-    try {
-      await logWeight(user.uid, val);
-      setWeightInput('');
-      const history = await getWeightHistory(user.uid);
-      setWeightHistory(history);
-    } catch {
-      Alert.alert('Error', 'Failed to log weight. Please try again.');
-    } finally {
-      setLogging(false);
-    }
-  };
-
   const handlePreset = (val: number) => {
     setCalorieInput(String(val));
     setSaved(false);
@@ -102,11 +80,6 @@ export default function GoalsScreen() {
     setCalorieInput(String(next));
     setSaved(false);
   };
-
-  const todayStr = new Date().toISOString().split('T')[0];
-  const hasLoggedToday = weightHistory.some(
-    (e) => e.logged_at && e.logged_at.split('T')[0] === todayStr
-  );
 
   const weightGoal = Number(weightGoalInput) || null;
   const chartData = weightHistory.map((e) => ({
@@ -131,46 +104,6 @@ export default function GoalsScreen() {
         keyboardDismissMode="on-drag"
         automaticallyAdjustKeyboardInsets
       >
-        {/* Log Today's Weight */}
-        {hasLoggedToday ? (
-          <View style={styles.section}>
-            <Text style={styles.sectionLabel}>TODAY'S WEIGHT</Text>
-            <Text style={styles.loggedText}>
-              {weightHistory[weightHistory.length - 1].weight} lbs — logged
-            </Text>
-            <Text style={styles.loggedSub}>Come back tomorrow to log again</Text>
-          </View>
-        ) : (
-          <View style={styles.section}>
-            <Text style={styles.sectionLabel}>LOG TODAY'S WEIGHT</Text>
-            <View style={styles.logRow}>
-              <TextInput
-                style={styles.logInput}
-                value={weightInput}
-                onChangeText={setWeightInput}
-                keyboardType="decimal-pad"
-                returnKeyType="done"
-                placeholder="e.g. 185"
-                placeholderTextColor="#CCCCCC"
-                maxLength={6}
-              />
-              <Text style={styles.logUnit}>lbs</Text>
-              <TouchableOpacity
-                style={[styles.logBtn, logging && styles.logBtnDisabled]}
-                onPress={handleLogWeight}
-                disabled={logging}
-                activeOpacity={0.8}
-              >
-                {logging ? (
-                  <ActivityIndicator color="#FFFFFF" size="small" />
-                ) : (
-                  <Text style={styles.logBtnText}>Log</Text>
-                )}
-              </TouchableOpacity>
-            </View>
-          </View>
-        )}
-
         {/* Weight History Chart */}
         {chartData.length > 0 && (
           <View style={styles.section}>
@@ -318,54 +251,6 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#AAAAAA',
     letterSpacing: 1,
-    alignSelf: 'flex-start',
-  },
-  logRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    alignSelf: 'stretch',
-  },
-  logInput: {
-    flex: 1,
-    fontSize: 28,
-    fontWeight: '700',
-    color: '#111111',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderWidth: 1,
-    borderColor: '#E5E5E5',
-  },
-  logUnit: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#999999',
-  },
-  logBtn: {
-    backgroundColor: '#111111',
-    borderRadius: 12,
-    paddingHorizontal: 20,
-    paddingVertical: 13,
-  },
-  logBtnDisabled: {
-    opacity: 0.5,
-  },
-  logBtnText: {
-    color: '#FFFFFF',
-    fontWeight: '700',
-    fontSize: 15,
-  },
-  loggedText: {
-    fontSize: 26,
-    fontWeight: '700',
-    color: '#111111',
-    alignSelf: 'flex-start',
-  },
-  loggedSub: {
-    fontSize: 13,
-    color: '#AAAAAA',
     alignSelf: 'flex-start',
   },
   legendRow: {
