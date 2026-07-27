@@ -8,25 +8,18 @@ import {
   Alert,
   ActivityIndicator,
   ScrollView,
-  Dimensions,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect } from 'expo-router';
-import { LineChart } from 'react-native-gifted-charts';
-import { useAuth } from '../../lib/auth';
 import { getCalorieGoal, saveCalorieGoal, getWeightGoal, saveWeightGoal } from '../../lib/goals';
-import { getWeightHistory, WeightEntry } from '../../lib/api';
 
 const PRESETS = [1500, 1800, 2000, 2200, 2500];
-const SCREEN_WIDTH = Dimensions.get('window').width;
 
 export default function GoalsScreen() {
   const insets = useSafeAreaInsets();
-  const { user } = useAuth();
 
   const [calorieInput, setCalorieInput] = useState('');
   const [weightGoalInput, setWeightGoalInput] = useState('');
-  const [weightHistory, setWeightHistory] = useState<WeightEntry[]>([]);
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
 
@@ -34,11 +27,7 @@ export default function GoalsScreen() {
     const [cal, weightGoal] = await Promise.all([getCalorieGoal(), getWeightGoal()]);
     setCalorieInput(String(cal));
     setWeightGoalInput(weightGoal !== null ? String(weightGoal) : '');
-    if (user) {
-      const history = await getWeightHistory(user.uid);
-      setWeightHistory(history);
-    }
-  }, [user]);
+  }, []);
 
   useFocusEffect(
     useCallback(() => {
@@ -81,16 +70,6 @@ export default function GoalsScreen() {
     setSaved(false);
   };
 
-  const weightGoal = Number(weightGoalInput) || null;
-  const chartData = weightHistory.map((e) => ({
-    value: e.weight,
-    label: new Date(e.logged_at!).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric' }),
-  }));
-
-  const allWeights = weightHistory.map((e) => e.weight);
-  if (weightGoal) allWeights.push(weightGoal);
-  const minWeight = allWeights.length ? Math.min(...allWeights) - 5 : 100;
-  const maxWeight = allWeights.length ? Math.max(...allWeights) + 5 : 200;
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -104,46 +83,6 @@ export default function GoalsScreen() {
         keyboardDismissMode="on-drag"
         automaticallyAdjustKeyboardInsets
       >
-        {/* Weight History Chart */}
-        {chartData.length > 0 && (
-          <View style={styles.section}>
-            <Text style={styles.sectionLabel}>WEIGHT HISTORY</Text>
-            <LineChart
-              data={chartData}
-              width={SCREEN_WIDTH - 80}
-              height={160}
-              color="#111111"
-              thickness={2}
-              dataPointsColor="#111111"
-              dataPointsRadius={4}
-              yAxisTextStyle={{ color: '#AAAAAA', fontSize: 10 }}
-              xAxisLabelTextStyle={{ color: '#AAAAAA', fontSize: 9 }}
-              yAxisThickness={0}
-              xAxisThickness={1}
-              xAxisColor="#E5E5E5"
-              hideRules
-              isAnimated
-              yAxisOffset={minWeight}
-              maxValue={maxWeight - minWeight}
-              noOfSections={4}
-              referenceLine1Position={weightGoal ? weightGoal - minWeight : undefined}
-              referenceLine1Config={weightGoal ? { color: '#CCCCCC', thickness: 1, width: SCREEN_WIDTH - 80 } : undefined}
-            />
-            {weightGoal ? (
-              <View style={styles.legendRow}>
-                <View style={styles.legendItem}>
-                  <View style={[styles.legendDot, { backgroundColor: '#111111' }]} />
-                  <Text style={styles.legendText}>Actual</Text>
-                </View>
-                <View style={styles.legendItem}>
-                  <View style={[styles.legendDot, { backgroundColor: '#CCCCCC' }]} />
-                  <Text style={styles.legendText}>Target ({weightGoal} lbs)</Text>
-                </View>
-              </View>
-            ) : null}
-          </View>
-        )}
-
         <View style={styles.divider}>
           <Text style={styles.dividerText}>YOUR GOALS</Text>
         </View>
@@ -252,25 +191,6 @@ const styles = StyleSheet.create({
     color: '#AAAAAA',
     letterSpacing: 1,
     alignSelf: 'flex-start',
-  },
-  legendRow: {
-    flexDirection: 'row',
-    gap: 16,
-    alignSelf: 'flex-start',
-  },
-  legendItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  legendDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-  },
-  legendText: {
-    fontSize: 12,
-    color: '#999999',
   },
   divider: {
     alignItems: 'center',
