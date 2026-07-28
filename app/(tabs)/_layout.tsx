@@ -1,36 +1,6 @@
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { View } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { colors, gradients, fonts } from '../../lib/theme';
-
-function AddTabIcon({ focused }: { focused: boolean }) {
-  return (
-    <View
-      style={{
-        marginTop: -26,
-        width: 52,
-        height: 52,
-        borderRadius: 26,
-        overflow: 'hidden',
-        borderWidth: 1.5,
-        borderColor: colors.border,
-        shadowColor: colors.primaryDark,
-        shadowOffset: { width: 0, height: 6 },
-        shadowOpacity: 0.3,
-        shadowRadius: 10,
-        elevation: 6,
-      }}
-    >
-      <LinearGradient
-        colors={gradients.primary}
-        style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}
-      >
-        <Ionicons name="add" size={28} color={colors.white} />
-      </LinearGradient>
-    </View>
-  );
-}
+import { colors, fonts } from '../../lib/theme';
 
 export default function TabsLayout() {
   return (
@@ -75,8 +45,10 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="add"
         options={{
-          title: '',
-          tabBarIcon: ({ focused }) => <AddTabIcon focused={focused} />,
+          title: 'Add',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="add-circle" size={size} color={color} />
+          ),
         }}
       />
       <Tabs.Screen
