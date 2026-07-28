@@ -89,46 +89,50 @@ export default function GoalsScreen() {
           <Text style={styles.dividerText}>YOUR GOALS</Text>
         </View>
 
-        {/* Target Weight Goal */}
-        <View style={styles.section}>
-          <Text style={styles.sectionLabel}>TARGET WEIGHT</Text>
-          <View style={styles.weightRow}>
-            <TextInput
-              style={styles.goalInput}
-              value={weightGoalInput}
-              onChangeText={(v) => { setWeightGoalInput(v); setSaved(false); }}
-              keyboardType="decimal-pad"
-              returnKeyType="done"
-              placeholder="0"
-              placeholderTextColor={colors.muted}
-              maxLength={6}
-              selectTextOnFocus
-            />
-            <Text style={styles.weightUnit}>lbs</Text>
+        <View style={styles.card}>
+          {/* Target Weight */}
+          <View style={styles.row}>
+            <Text style={styles.rowLabel}>Target Weight</Text>
+            <View style={styles.weightInputWrap}>
+              <TextInput
+                style={styles.weightInput}
+                value={weightGoalInput}
+                onChangeText={(v) => { setWeightGoalInput(v); setSaved(false); }}
+                keyboardType="decimal-pad"
+                returnKeyType="done"
+                placeholder="0"
+                placeholderTextColor={colors.muted}
+                maxLength={6}
+                selectTextOnFocus
+              />
+              <Text style={styles.weightUnit}>lbs</Text>
+            </View>
           </View>
-        </View>
 
-        {/* Daily Calorie Target */}
-        <View style={styles.section}>
-          <Text style={styles.sectionLabel}>DAILY CALORIE TARGET</Text>
-          <View style={styles.stepper}>
-            <TouchableOpacity style={styles.stepBtn} onPress={() => adjust(-50)} activeOpacity={0.7}>
-              <Text style={styles.stepBtnText}>-</Text>
-            </TouchableOpacity>
-            <TextInput
-              style={styles.calorieInput}
-              value={calorieInput}
-              onChangeText={(v) => { setCalorieInput(v); setSaved(false); }}
-              keyboardType="number-pad"
-              returnKeyType="done"
-              maxLength={5}
-              selectTextOnFocus
-            />
-            <TouchableOpacity style={styles.stepBtn} onPress={() => adjust(50)} activeOpacity={0.7}>
-              <Text style={styles.stepBtnText}>+</Text>
-            </TouchableOpacity>
+          <View style={styles.rowDivider} />
+
+          {/* Daily Calorie Goal */}
+          <View style={styles.row}>
+            <Text style={styles.rowLabel}>Daily Calorie Goal</Text>
+            <View style={styles.stepper}>
+              <TouchableOpacity style={styles.stepBtn} onPress={() => adjust(-50)} activeOpacity={0.7}>
+                <Text style={styles.stepBtnText}>−</Text>
+              </TouchableOpacity>
+              <TextInput
+                style={styles.calorieInput}
+                value={calorieInput}
+                onChangeText={(v) => { setCalorieInput(v); setSaved(false); }}
+                keyboardType="number-pad"
+                returnKeyType="done"
+                maxLength={5}
+                selectTextOnFocus
+              />
+              <TouchableOpacity style={styles.stepBtn} onPress={() => adjust(50)} activeOpacity={0.7}>
+                <Text style={styles.stepBtnText}>+</Text>
+              </TouchableOpacity>
+            </View>
           </View>
-          <Text style={styles.unit}>kcal / day</Text>
+
           <View style={styles.presets}>
             {PRESETS.map((p) => (
               <TouchableOpacity
@@ -179,24 +183,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: 16,
-    gap: 12,
-  },
-  section: {
-    backgroundColor: colors.card,
-    borderRadius: radius.xl,
-    borderWidth: 1.5,
-    borderColor: colors.border,
-    padding: 20,
-    alignItems: 'center',
-    gap: 12,
-    ...shadow.card,
-  },
-  sectionLabel: {
-    fontSize: 11,
-    fontFamily: fonts.bodyExtraBold,
-    color: colors.muted,
-    letterSpacing: 1,
-    alignSelf: 'flex-start',
+    gap: 16,
   },
   divider: {
     alignItems: 'center',
@@ -208,33 +195,64 @@ const styles = StyleSheet.create({
     color: colors.muted,
     letterSpacing: 1.5,
   },
-  weightRow: {
+  card: {
+    backgroundColor: colors.card,
+    borderRadius: radius.xl,
+    borderWidth: 1.5,
+    borderColor: colors.border,
+    overflow: 'hidden',
+    ...shadow.card,
+  },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 18,
+    paddingVertical: 16,
+  },
+  rowDivider: {
+    height: 1.5,
+    backgroundColor: colors.borderLight,
+    marginHorizontal: 18,
+  },
+  rowLabel: {
+    fontSize: 15,
+    fontFamily: fonts.bodyBold,
+    color: colors.text,
+  },
+  weightInputWrap: {
     flexDirection: 'row',
     alignItems: 'baseline',
-    gap: 8,
+    gap: 6,
+    backgroundColor: colors.cardAlt,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.sm,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
   },
-  goalInput: {
-    fontSize: 52,
-    fontFamily: fonts.headline,
+  weightInput: {
+    fontSize: 20,
+    fontFamily: fonts.headlineSemiBold,
     color: colors.text,
-    minWidth: 120,
-    textAlign: 'center',
-    letterSpacing: -1,
+    minWidth: 44,
+    textAlign: 'right',
+    padding: 0,
   },
   weightUnit: {
-    fontSize: 20,
+    fontSize: 13,
     fontFamily: fonts.bodyBold,
     color: colors.muted,
   },
   stepper: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 16,
+    gap: 10,
   },
   stepBtn: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     backgroundColor: colors.cardAlt,
     borderWidth: 1,
     borderColor: colors.border,
@@ -242,34 +260,30 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   stepBtnText: {
-    fontSize: 24,
+    fontSize: 17,
     fontFamily: fonts.headlineMedium,
     color: colors.primaryDark,
-    lineHeight: 28,
+    lineHeight: 20,
   },
   calorieInput: {
-    fontSize: 52,
-    fontFamily: fonts.headline,
+    fontSize: 20,
+    fontFamily: fonts.headlineSemiBold,
     color: colors.text,
-    minWidth: 140,
+    minWidth: 56,
     textAlign: 'center',
-    letterSpacing: -1,
-  },
-  unit: {
-    fontSize: 14,
-    fontFamily: fonts.bodySemiBold,
-    color: colors.muted,
-    marginTop: -4,
+    padding: 0,
   },
   presets: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
-    justifyContent: 'center',
+    paddingHorizontal: 18,
+    paddingTop: 4,
+    paddingBottom: 18,
   },
   presetBtn: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingHorizontal: 14,
+    paddingVertical: 7,
     borderRadius: radius.pill,
     backgroundColor: colors.cardAlt,
     borderWidth: 1,
@@ -280,7 +294,7 @@ const styles = StyleSheet.create({
     borderColor: colors.primaryDark,
   },
   presetText: {
-    fontSize: 14,
+    fontSize: 13,
     fontFamily: fonts.bodyBold,
     color: colors.muted,
   },
@@ -290,7 +304,6 @@ const styles = StyleSheet.create({
   saveBtnWrap: {
     borderRadius: radius.md,
     overflow: 'hidden',
-    marginTop: 4,
   },
   saveBtn: {
     paddingVertical: 18,
