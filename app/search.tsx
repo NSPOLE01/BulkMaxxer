@@ -11,8 +11,10 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { searchFood, FoodResult } from '../lib/api';
+import { colors, gradients, fonts, radius, shadow } from '../lib/theme';
 
 export default function SearchScreen() {
   const insets = useSafeAreaInsets();
@@ -52,12 +54,12 @@ export default function SearchScreen() {
   };
 
   return (
-    <View style={[styles.container, { paddingBottom: insets.bottom }]}>
+    <LinearGradient colors={gradients.background} style={[styles.container, { paddingBottom: insets.bottom }]}>
       <View style={styles.searchRow}>
         <TextInput
           style={styles.input}
           placeholder="Search for a food..."
-          placeholderTextColor="#AAAAAA"
+          placeholderTextColor={colors.muted}
           value={query}
           onChangeText={setQuery}
           returnKeyType="search"
@@ -65,22 +67,24 @@ export default function SearchScreen() {
           autoFocus
         />
         <TouchableOpacity
-          style={styles.searchBtn}
+          style={styles.searchBtnWrap}
           onPress={handleSearch}
           disabled={loading}
           activeOpacity={0.8}
         >
-          {loading ? (
-            <ActivityIndicator color="#FFFFFF" size="small" />
-          ) : (
-            <Ionicons name="search" size={20} color="#FFFFFF" />
-          )}
+          <LinearGradient colors={gradients.primary} style={styles.searchBtn}>
+            {loading ? (
+              <ActivityIndicator color={colors.white} size="small" />
+            ) : (
+              <Ionicons name="search" size={20} color={colors.white} />
+            )}
+          </LinearGradient>
         </TouchableOpacity>
       </View>
 
       {loading ? (
         <View style={styles.center}>
-          <ActivityIndicator color="#111111" size="large" />
+          <ActivityIndicator color={colors.primary} size="large" />
           <Text style={styles.loadingText}>Searching...</Text>
         </View>
       ) : (
@@ -115,13 +119,13 @@ export default function SearchScreen() {
           ListEmptyComponent={
             searched ? (
               <View style={styles.empty}>
-                <Ionicons name="search-outline" size={48} color="#DDDDDD" />
+                <Ionicons name="search-outline" size={48} color={colors.muted} />
                 <Text style={styles.emptyTitle}>No results found</Text>
                 <Text style={styles.emptySubtitle}>Try a different search term</Text>
               </View>
             ) : (
               <View style={styles.empty}>
-                <Ionicons name="nutrition-outline" size={48} color="#DDDDDD" />
+                <Ionicons name="nutrition-outline" size={48} color={colors.muted} />
                 <Text style={styles.emptyTitle}>Search for any food</Text>
                 <Text style={styles.emptySubtitle}>
                   Powered by Open Food Facts database
@@ -131,14 +135,13 @@ export default function SearchScreen() {
           }
         />
       )}
-    </View>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
   },
   searchRow: {
     flexDirection: 'row',
@@ -148,19 +151,23 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
-    borderRadius: 10,
+    backgroundColor: colors.card,
+    borderRadius: radius.sm,
     paddingHorizontal: 14,
     paddingVertical: 12,
     fontSize: 16,
-    color: '#111111',
-    borderWidth: 1,
-    borderColor: '#E5E5E5',
+    fontFamily: fonts.bodyBold,
+    color: colors.text,
+    borderWidth: 1.5,
+    borderColor: colors.border,
+  },
+  searchBtnWrap: {
+    borderRadius: radius.sm,
+    overflow: 'hidden',
   },
   searchBtn: {
-    backgroundColor: '#111111',
-    borderRadius: 10,
     width: 48,
+    height: '100%',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -171,7 +178,8 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   loadingText: {
-    color: '#999999',
+    color: colors.muted,
+    fontFamily: fonts.bodySemiBold,
     fontSize: 14,
   },
   list: {
@@ -190,20 +198,24 @@ const styles = StyleSheet.create({
     paddingTop: 80,
   },
   emptyTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#CCCCCC',
+    fontSize: 17,
+    fontFamily: fonts.headlineSemiBold,
+    color: colors.text,
   },
   emptySubtitle: {
     fontSize: 13,
-    color: '#CCCCCC',
+    fontFamily: fonts.bodySemiBold,
+    color: colors.muted,
   },
   resultItem: {
-    backgroundColor: '#F5F5F5',
-    borderRadius: 12,
+    backgroundColor: colors.card,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: colors.border,
     padding: 14,
     flexDirection: 'row',
     alignItems: 'center',
+    ...shadow.soft,
   },
   resultLeft: {
     flex: 1,
@@ -211,29 +223,32 @@ const styles = StyleSheet.create({
   },
   resultName: {
     fontSize: 15,
-    fontWeight: '600',
-    color: '#111111',
+    fontFamily: fonts.bodyBold,
+    color: colors.text,
     marginBottom: 4,
   },
   resultMacros: {
     fontSize: 11,
-    color: '#999999',
+    fontFamily: fonts.bodySemiBold,
+    color: colors.muted,
   },
   resultServing: {
     fontSize: 11,
-    color: '#AAAAAA',
+    fontFamily: fonts.body,
+    color: colors.muted,
     marginTop: 2,
   },
   resultRight: {
     alignItems: 'flex-end',
   },
   resultCalories: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: '#111111',
+    fontSize: 20,
+    fontFamily: fonts.headlineSemiBold,
+    color: colors.text,
   },
   resultKcal: {
     fontSize: 10,
-    color: '#AAAAAA',
+    fontFamily: fonts.bodySemiBold,
+    color: colors.muted,
   },
 });

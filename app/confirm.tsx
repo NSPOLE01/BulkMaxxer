@@ -12,9 +12,11 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useLocalSearchParams, router } from 'expo-router';
 import { useAuth } from '../lib/auth';
 import { addFoodEntry } from '../lib/api';
+import { colors, gradients, fonts, radius, shadow } from '../lib/theme';
 
 interface EditableField {
   label: string;
@@ -85,99 +87,102 @@ export default function ConfirmScreen() {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
-      <ScrollView
-        contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 24 }]}
-        keyboardShouldPersistTaps="handled"
+    <LinearGradient colors={gradients.background} style={styles.container}>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
-        <View style={styles.nameSection}>
-          <Text style={styles.sectionLabel}>FOOD NAME</Text>
-          <TextInput
-            style={styles.nameInput}
-            value={name}
-            onChangeText={setName}
-            placeholder="Food name"
-            placeholderTextColor="#AAAAAA"
-            returnKeyType="next"
-          />
-        </View>
+        <ScrollView
+          contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 24 }]}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View style={styles.nameSection}>
+            <Text style={styles.sectionLabel}>FOOD NAME</Text>
+            <TextInput
+              style={styles.nameInput}
+              value={name}
+              onChangeText={setName}
+              placeholder="Food name"
+              placeholderTextColor={colors.muted}
+              returnKeyType="next"
+            />
+          </View>
 
-        <View style={styles.fieldGroup}>
-          <Text style={styles.label}>Serving Size</Text>
-          <TextInput
-            style={styles.input}
-            value={servingSize}
-            onChangeText={setServingSize}
-            placeholder="e.g. 100g, 1 cup"
-            placeholderTextColor="#AAAAAA"
-            returnKeyType="next"
-          />
-        </View>
+          <View style={styles.fieldGroup}>
+            <Text style={styles.label}>Serving Size</Text>
+            <TextInput
+              style={styles.input}
+              value={servingSize}
+              onChangeText={setServingSize}
+              placeholder="e.g. 100g, 1 cup"
+              placeholderTextColor={colors.muted}
+              returnKeyType="next"
+            />
+          </View>
 
-        <View style={styles.macroSection}>
-          <Text style={styles.sectionLabel}>NUTRITION PER SERVING</Text>
-          {EDITABLE_FIELDS.map((field) => (
-            <View key={field.key} style={styles.macroRow}>
-              <Text style={styles.macroLabel}>{field.label}</Text>
-              <View style={styles.macroInputRow}>
-                <TextInput
-                  style={styles.macroInput}
-                  value={values[field.key as keyof typeof values]}
-                  onChangeText={(v) => update(field.key, v)}
-                  keyboardType="decimal-pad"
-                  returnKeyType="next"
-                />
-                <Text style={styles.macroUnit}>{field.unit}</Text>
+          <View style={styles.macroSection}>
+            <Text style={styles.sectionLabel}>NUTRITION PER SERVING</Text>
+            {EDITABLE_FIELDS.map((field) => (
+              <View key={field.key} style={styles.macroRow}>
+                <Text style={styles.macroLabel}>{field.label}</Text>
+                <View style={styles.macroInputRow}>
+                  <TextInput
+                    style={styles.macroInput}
+                    value={values[field.key as keyof typeof values]}
+                    onChangeText={(v) => update(field.key, v)}
+                    keyboardType="decimal-pad"
+                    returnKeyType="next"
+                  />
+                  <Text style={styles.macroUnit}>{field.unit}</Text>
+                </View>
+              </View>
+            ))}
+          </View>
+
+          <View style={styles.preview}>
+            <Text style={styles.previewTitle}>SUMMARY</Text>
+            <View style={styles.previewRow}>
+              <Text style={styles.previewFood} numberOfLines={2}>
+                {name || 'Food name'}
+              </Text>
+              <View style={styles.previewCalories}>
+                <Text style={styles.previewCalNum}>
+                  {Math.round(Number(values.calories) || 0)}
+                </Text>
+                <Text style={styles.previewKcal}>kcal</Text>
               </View>
             </View>
-          ))}
-        </View>
-
-        <View style={styles.preview}>
-          <Text style={styles.previewTitle}>SUMMARY</Text>
-          <View style={styles.previewRow}>
-            <Text style={styles.previewFood} numberOfLines={2}>
-              {name || 'Food name'}
+            <Text style={styles.previewMacros}>
+              P: {Math.round(Number(values.protein) || 0)}g · F:{' '}
+              {Math.round(Number(values.fat) || 0)}g · S:{' '}
+              {Math.round(Number(values.sugar) || 0)}g · Na:{' '}
+              {Math.round(Number(values.sodium) || 0)}mg
             </Text>
-            <View style={styles.previewCalories}>
-              <Text style={styles.previewCalNum}>
-                {Math.round(Number(values.calories) || 0)}
-              </Text>
-              <Text style={styles.previewKcal}>kcal</Text>
-            </View>
           </View>
-          <Text style={styles.previewMacros}>
-            P: {Math.round(Number(values.protein) || 0)}g · F:{' '}
-            {Math.round(Number(values.fat) || 0)}g · S:{' '}
-            {Math.round(Number(values.sugar) || 0)}g · Na:{' '}
-            {Math.round(Number(values.sodium) || 0)}mg
-          </Text>
-        </View>
 
-        <TouchableOpacity
-          style={[styles.logBtn, loading && styles.logBtnDisabled]}
-          onPress={handleLog}
-          disabled={loading}
-          activeOpacity={0.8}
-        >
-          {loading ? (
-            <ActivityIndicator color="#FFFFFF" />
-          ) : (
-            <Text style={styles.logBtnText}>Log Food</Text>
-          )}
-        </TouchableOpacity>
-      </ScrollView>
-    </KeyboardAvoidingView>
+          <TouchableOpacity
+            onPress={handleLog}
+            disabled={loading}
+            activeOpacity={0.85}
+            style={[styles.logBtnWrap, loading && styles.logBtnDisabled]}
+          >
+            <LinearGradient colors={gradients.primary} style={styles.logBtn}>
+              {loading ? (
+                <ActivityIndicator color={colors.white} />
+              ) : (
+                <Text style={styles.logBtnText}>Log Food</Text>
+              )}
+            </LinearGradient>
+          </TouchableOpacity>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
   },
   content: {
     paddingHorizontal: 16,
@@ -189,45 +194,49 @@ const styles = StyleSheet.create({
   },
   sectionLabel: {
     fontSize: 11,
-    fontWeight: '700',
-    color: '#AAAAAA',
+    fontFamily: fonts.bodyExtraBold,
+    color: colors.muted,
     letterSpacing: 1,
     marginBottom: 2,
   },
   nameInput: {
-    backgroundColor: '#F5F5F5',
-    borderRadius: 12,
+    backgroundColor: colors.card,
+    borderRadius: radius.sm,
     paddingHorizontal: 16,
     paddingVertical: 14,
     fontSize: 18,
-    fontWeight: '600',
-    color: '#111111',
-    borderWidth: 1,
-    borderColor: '#E5E5E5',
+    fontFamily: fonts.headlineSemiBold,
+    color: colors.text,
+    borderWidth: 1.5,
+    borderColor: colors.border,
   },
   fieldGroup: {
     gap: 6,
   },
   label: {
     fontSize: 13,
-    fontWeight: '600',
-    color: '#666666',
+    fontFamily: fonts.bodyBold,
+    color: colors.muted,
   },
   input: {
-    backgroundColor: '#F5F5F5',
-    borderRadius: 10,
+    backgroundColor: colors.card,
+    borderRadius: radius.sm,
     paddingHorizontal: 14,
     paddingVertical: 12,
     fontSize: 15,
-    color: '#111111',
-    borderWidth: 1,
-    borderColor: '#E5E5E5',
+    fontFamily: fonts.bodyBold,
+    color: colors.text,
+    borderWidth: 1.5,
+    borderColor: colors.border,
   },
   macroSection: {
-    backgroundColor: '#F5F5F5',
-    borderRadius: 16,
+    backgroundColor: colors.card,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: colors.border,
     padding: 16,
     gap: 12,
+    ...shadow.soft,
   },
   macroRow: {
     flexDirection: 'row',
@@ -236,7 +245,8 @@ const styles = StyleSheet.create({
   },
   macroLabel: {
     fontSize: 15,
-    color: '#444444',
+    fontFamily: fonts.bodySemiBold,
+    color: colors.text,
     flex: 1,
   },
   macroInputRow: {
@@ -245,33 +255,36 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   macroInput: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 8,
+    backgroundColor: colors.white,
+    borderRadius: radius.sm - 2,
     paddingHorizontal: 12,
     paddingVertical: 8,
     fontSize: 15,
-    color: '#111111',
+    fontFamily: fonts.bodyBold,
+    color: colors.text,
     width: 80,
     textAlign: 'right',
     borderWidth: 1,
-    borderColor: '#E5E5E5',
+    borderColor: colors.border,
   },
   macroUnit: {
-    color: '#999999',
+    color: colors.muted,
+    fontFamily: fonts.bodySemiBold,
     fontSize: 13,
     width: 30,
   },
   preview: {
-    backgroundColor: '#F5F5F5',
-    borderRadius: 16,
+    backgroundColor: colors.card,
+    borderRadius: radius.lg,
     padding: 16,
-    borderWidth: 1,
-    borderColor: '#E5E5E5',
+    borderWidth: 1.5,
+    borderColor: colors.border,
+    ...shadow.card,
   },
   previewTitle: {
     fontSize: 11,
-    fontWeight: '700',
-    color: '#AAAAAA',
+    fontFamily: fonts.bodyExtraBold,
+    color: colors.muted,
     letterSpacing: 1,
     marginBottom: 10,
   },
@@ -283,8 +296,8 @@ const styles = StyleSheet.create({
   },
   previewFood: {
     fontSize: 16,
-    fontWeight: '700',
-    color: '#111111',
+    fontFamily: fonts.headlineSemiBold,
+    color: colors.text,
     flex: 1,
   },
   previewCalories: {
@@ -292,31 +305,35 @@ const styles = StyleSheet.create({
   },
   previewCalNum: {
     fontSize: 28,
-    fontWeight: '800',
-    color: '#111111',
+    fontFamily: fonts.headline,
+    color: colors.text,
   },
   previewKcal: {
     fontSize: 10,
-    color: '#AAAAAA',
+    fontFamily: fonts.bodySemiBold,
+    color: colors.muted,
     marginTop: -4,
   },
   previewMacros: {
     fontSize: 12,
-    color: '#999999',
+    fontFamily: fonts.bodySemiBold,
+    color: colors.muted,
     marginTop: 6,
   },
+  logBtnWrap: {
+    borderRadius: radius.md,
+    overflow: 'hidden',
+  },
   logBtn: {
-    backgroundColor: '#111111',
-    borderRadius: 14,
     paddingVertical: 18,
     alignItems: 'center',
   },
   logBtnDisabled: {
-    opacity: 0.5,
+    opacity: 0.6,
   },
   logBtnText: {
-    color: '#FFFFFF',
-    fontWeight: '700',
+    color: colors.white,
+    fontFamily: fonts.bodyBold,
     fontSize: 17,
   },
 });

@@ -10,9 +10,11 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { router, useFocusEffect } from 'expo-router';
 import { useAuth } from '../../lib/auth';
 import { logWeight, getWeightHistory, WeightEntry } from '../../lib/api';
+import { colors, gradients, fonts, radius, shadow } from '../../lib/theme';
 
 interface OptionCardProps {
   icon: keyof typeof Ionicons.glyphMap;
@@ -25,13 +27,13 @@ function OptionCard({ icon, title, description, onPress }: OptionCardProps) {
   return (
     <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.75}>
       <View style={styles.iconBox}>
-        <Ionicons name={icon} size={32} color="#111111" />
+        <Ionicons name={icon} size={30} color={colors.primaryDark} />
       </View>
       <View style={styles.cardText}>
         <Text style={styles.cardTitle}>{title}</Text>
         <Text style={styles.cardDesc}>{description}</Text>
       </View>
-      <Ionicons name="chevron-forward" size={20} color="#AAAAAA" />
+      <Ionicons name="chevron-forward" size={20} color={colors.muted} />
     </TouchableOpacity>
   );
 }
@@ -82,9 +84,9 @@ export default function AddScreen() {
   };
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
+    <LinearGradient colors={gradients.background} style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.header}>
-        <Text style={styles.title}>Add</Text>
+        <Text style={styles.title}>Add Food</Text>
         <Text style={styles.subtitle}>Log food or today's weight</Text>
       </View>
 
@@ -93,7 +95,7 @@ export default function AddScreen() {
         {hasLoggedToday ? (
           <View style={styles.loggedCard}>
             <View style={styles.iconBox}>
-              <Ionicons name="scale-outline" size={32} color="#111111" />
+              <Ionicons name="scale-outline" size={30} color={colors.primaryDark} />
             </View>
             <View style={styles.cardText}>
               <Text style={styles.cardTitle}>Today's Weight</Text>
@@ -101,13 +103,13 @@ export default function AddScreen() {
                 {weightHistory[weightHistory.length - 1].weight} lbs — logged
               </Text>
             </View>
-            <Ionicons name="checkmark-circle" size={22} color="#34C759" />
+            <Ionicons name="checkmark-circle" size={22} color={colors.secondary} />
           </View>
         ) : (
           <View style={styles.weightCard}>
             <View style={styles.weightCardTop}>
               <View style={styles.iconBox}>
-                <Ionicons name="scale-outline" size={32} color="#111111" />
+                <Ionicons name="scale-outline" size={30} color={colors.primaryDark} />
               </View>
               <View style={styles.cardText}>
                 <Text style={styles.cardTitle}>Log Today's Weight</Text>
@@ -122,21 +124,23 @@ export default function AddScreen() {
                 keyboardType="decimal-pad"
                 returnKeyType="done"
                 placeholder="e.g. 185"
-                placeholderTextColor="#CCCCCC"
+                placeholderTextColor={colors.muted}
                 maxLength={6}
               />
               <Text style={styles.logUnit}>lbs</Text>
               <TouchableOpacity
-                style={[styles.logBtn, logging && styles.logBtnDisabled]}
                 onPress={handleLogWeight}
                 disabled={logging}
-                activeOpacity={0.8}
+                activeOpacity={0.85}
+                style={[styles.logBtnWrap, logging && styles.logBtnDisabled]}
               >
-                {logging ? (
-                  <ActivityIndicator color="#FFFFFF" size="small" />
-                ) : (
-                  <Text style={styles.logBtnText}>Log</Text>
-                )}
+                <LinearGradient colors={gradients.primary} style={styles.logBtn}>
+                  {logging ? (
+                    <ActivityIndicator color={colors.white} size="small" />
+                  ) : (
+                    <Text style={styles.logBtnText}>Log</Text>
+                  )}
+                </LinearGradient>
               </TouchableOpacity>
             </View>
           </View>
@@ -165,54 +169,63 @@ export default function AddScreen() {
           onPress={() => router.push('/manual')}
         />
       </View>
-    </View>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
   },
   header: {
-    paddingHorizontal: 20,
-    paddingVertical: 20,
+    paddingHorizontal: 22,
+    paddingVertical: 18,
   },
   title: {
-    fontSize: 26,
-    fontWeight: '800',
-    color: '#111111',
+    fontSize: 24,
+    fontFamily: fonts.headline,
+    color: colors.text,
   },
   subtitle: {
     fontSize: 14,
-    color: '#999999',
+    fontFamily: fonts.bodySemiBold,
+    color: colors.muted,
     marginTop: 4,
   },
   cards: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 22,
     gap: 12,
   },
   card: {
-    backgroundColor: '#F5F5F5',
-    borderRadius: 16,
-    padding: 20,
+    backgroundColor: colors.card,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: colors.border,
+    padding: 18,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 16,
+    ...shadow.soft,
   },
   loggedCard: {
-    backgroundColor: '#F5F5F5',
-    borderRadius: 16,
-    padding: 20,
+    backgroundColor: colors.card,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: colors.border,
+    padding: 18,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 16,
+    ...shadow.soft,
   },
   weightCard: {
-    backgroundColor: '#F5F5F5',
-    borderRadius: 16,
-    padding: 20,
+    backgroundColor: colors.card,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: colors.border,
+    padding: 18,
     gap: 16,
+    ...shadow.card,
   },
   weightCardTop: {
     flexDirection: 'row',
@@ -220,10 +233,12 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   iconBox: {
-    width: 56,
-    height: 56,
+    width: 54,
+    height: 54,
     borderRadius: 14,
-    backgroundColor: '#E8E8E8',
+    backgroundColor: colors.cardAlt,
+    borderWidth: 1,
+    borderColor: colors.border,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -231,14 +246,15 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   cardTitle: {
-    fontSize: 17,
-    fontWeight: '700',
-    color: '#111111',
+    fontSize: 16,
+    fontFamily: fonts.headlineSemiBold,
+    color: colors.text,
     marginBottom: 3,
   },
   cardDesc: {
     fontSize: 13,
-    color: '#999999',
+    fontFamily: fonts.bodySemiBold,
+    color: colors.muted,
   },
   logRow: {
     flexDirection: 'row',
@@ -247,33 +263,37 @@ const styles = StyleSheet.create({
   },
   logInput: {
     flex: 1,
-    fontSize: 28,
-    fontWeight: '700',
-    color: '#111111',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
+    fontSize: 26,
+    fontFamily: fonts.headlineSemiBold,
+    color: colors.text,
+    backgroundColor: colors.white,
+    borderRadius: radius.sm,
     paddingHorizontal: 14,
     paddingVertical: 10,
     borderWidth: 1,
-    borderColor: '#E5E5E5',
+    borderColor: colors.border,
   },
   logUnit: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#999999',
+    fontSize: 15,
+    fontFamily: fonts.bodyBold,
+    color: colors.muted,
+  },
+  logBtnWrap: {
+    borderRadius: radius.sm,
+    overflow: 'hidden',
   },
   logBtn: {
-    backgroundColor: '#111111',
-    borderRadius: 12,
-    paddingHorizontal: 20,
-    paddingVertical: 13,
+    paddingHorizontal: 22,
+    paddingVertical: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   logBtnDisabled: {
-    opacity: 0.5,
+    opacity: 0.6,
   },
   logBtnText: {
-    color: '#FFFFFF',
-    fontWeight: '700',
+    color: colors.white,
+    fontFamily: fonts.bodyBold,
     fontSize: 15,
   },
   divider: {
@@ -282,8 +302,8 @@ const styles = StyleSheet.create({
   },
   dividerText: {
     fontSize: 11,
-    fontWeight: '700',
-    color: '#CCCCCC',
-    letterSpacing: 1,
+    fontFamily: fonts.bodyExtraBold,
+    color: colors.muted,
+    letterSpacing: 1.5,
   },
 });

@@ -8,35 +8,39 @@ import {
   Dimensions,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
 import { BarChart, LineChart } from 'react-native-gifted-charts';
 import { useAuth } from '../../lib/auth';
 import { getTodayLog, getWeekLog, getWeightHistory, FoodEntry, WeekDay, WeightEntry } from '../../lib/api';
 import { getCalorieGoal, getWeightGoal } from '../../lib/goals';
 import { useFocusEffect } from 'expo-router';
+import { colors, gradients, fonts, radius, shadow } from '../../lib/theme';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
-function CalorieRing({ consumed, goal }: { consumed: number; goal: number }) {
+function CalorieCard({ consumed, goal }: { consumed: number; goal: number }) {
   const pct = Math.min(consumed / goal, 1);
   const remaining = Math.max(goal - consumed, 0);
 
   return (
-    <View style={styles.ringContainer}>
-      <View style={styles.ringOuter}>
-        <View style={[styles.ringFill, { opacity: pct > 0 ? 1 : 0.1 }]} />
-        <View style={styles.ringInner}>
-          <Text style={styles.ringCalories}>{Math.round(consumed)}</Text>
-          <Text style={styles.ringLabel}>calories</Text>
-          <Text style={styles.ringRemaining}>
-            {remaining > 0 ? `${Math.round(remaining)} remaining` : 'Goal reached!'}
-          </Text>
-        </View>
-      </View>
-      <View style={styles.goalRow}>
-        <Text style={styles.goalText}>Goal: {goal} kcal</Text>
-        <Text style={[styles.goalPct, { color: pct >= 1 ? '#FF3B30' : '#111111' }]}>
-          {Math.round(pct * 100)}%
+    <View style={styles.calorieCard}>
+      <View style={styles.calorieHeaderRow}>
+        <Text style={styles.calorieLabel}>Today's Calories</Text>
+        <Text style={styles.calorieRemaining}>
+          {remaining > 0 ? `${Math.round(remaining)} left` : 'Goal reached!'}
         </Text>
+      </View>
+      <View style={styles.calorieNumberRow}>
+        <Text style={styles.calorieConsumed}>{Math.round(consumed)}</Text>
+        <Text style={styles.calorieGoal}> / {goal}</Text>
+      </View>
+      <View style={styles.calorieTrack}>
+        <LinearGradient
+          colors={gradients.primary}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={[styles.calorieFill, { width: `${pct * 100}%` }]}
+        />
       </View>
     </View>
   );
@@ -45,8 +49,10 @@ function CalorieRing({ consumed, goal }: { consumed: number; goal: number }) {
 function MacroCard({ label, value, unit }: { label: string; value: number; unit: string }) {
   return (
     <View style={styles.macroCard}>
-      <Text style={styles.macroValue}>{Math.round(value)}</Text>
-      <Text style={styles.macroUnit}>{unit}</Text>
+      <Text style={styles.macroValue}>
+        {Math.round(value)}
+        <Text style={styles.macroUnit}> {unit}</Text>
+      </Text>
       <Text style={styles.macroLabel}>{label}</Text>
     </View>
   );
@@ -109,266 +115,282 @@ export default function DashboardScreen() {
   const barData = weekData.map((d) => ({
     value: Math.round(d.calories),
     label: new Date(d.date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short' }),
-    frontColor: d.date === new Date().toISOString().split('T')[0] ? '#111111' : '#CCCCCC',
+    frontColor: d.date === new Date().toISOString().split('T')[0] ? colors.primary : colors.track,
     topLabelComponent: () => null,
   }));
 
   return (
-    <ScrollView
-      style={[styles.container, { paddingTop: insets.top }]}
-      contentContainerStyle={styles.content}
-      refreshControl={
-        <RefreshControl
-          refreshing={refreshing}
-          onRefresh={onRefresh}
-          tintColor="#111111"
-        />
-      }
-    >
-      <View style={styles.header}>
-        <Text style={styles.appName}>BulkMaxxer</Text>
-        <Text style={styles.dateText}>{today}</Text>
-      </View>
+    <LinearGradient colors={gradients.background} style={styles.container}>
+      <ScrollView
+        style={{ paddingTop: insets.top }}
+        contentContainerStyle={styles.content}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={colors.primary}
+          />
+        }
+      >
+        <View style={styles.header}>
+          <Text style={styles.appName}>BulkMaxxer</Text>
+          <Text style={styles.dateText}>{today}</Text>
+        </View>
 
-      <CalorieRing consumed={totalCalories} goal={calorieGoal} />
+        <View style={styles.section}>
+          <CalorieCard consumed={totalCalories} goal={calorieGoal} />
+        </View>
 
-      <View style={styles.macroRow}>
-        <MacroCard label="Protein" value={totalProtein} unit="g" />
-        <MacroCard label="Fat" value={totalFat} unit="g" />
-        <MacroCard label="Sugar" value={totalSugar} unit="g" />
-        <MacroCard label="Sodium" value={totalSodium} unit="mg" />
-      </View>
+        <View style={styles.macroRow}>
+          <MacroCard label="Protein" value={totalProtein} unit="g" />
+          <MacroCard label="Fat" value={totalFat} unit="g" />
+          <MacroCard label="Sugar" value={totalSugar} unit="g" />
+          <MacroCard label="Sodium" value={totalSodium} unit="mg" />
+        </View>
 
-      <View style={styles.chartSection}>
-        <Text style={styles.sectionTitle}>This Week</Text>
-        {weekData.length > 0 ? (
-          <View style={styles.chartWrapper}>
-            <BarChart
-              data={barData}
-              barWidth={28}
-              spacing={12}
-              roundedTop
-              roundedBottom
-              hideRules
-              yAxisThickness={0}
-              xAxisThickness={1}
-              xAxisColor="#E5E5E5"
-              yAxisTextStyle={{ color: '#AAAAAA', fontSize: 10 }}
-              xAxisLabelTextStyle={{ color: '#AAAAAA', fontSize: 10 }}
-              noOfSections={4}
-              maxValue={Math.max(...barData.map((d) => d.value), calorieGoal) + 200}
-              width={SCREEN_WIDTH - 64}
-              height={180}
-              isAnimated
-            />
+        <View style={styles.chartSection}>
+          <Text style={styles.sectionTitle}>This Week</Text>
+          {weekData.length > 0 ? (
+            <View style={styles.chartWrapper}>
+              <BarChart
+                data={barData}
+                barWidth={28}
+                spacing={12}
+                roundedTop
+                roundedBottom
+                hideRules
+                yAxisThickness={0}
+                xAxisThickness={1}
+                xAxisColor={colors.borderLight}
+                yAxisTextStyle={{ color: colors.muted, fontSize: 10, fontFamily: fonts.bodySemiBold }}
+                xAxisLabelTextStyle={{ color: colors.muted, fontSize: 10, fontFamily: fonts.bodySemiBold }}
+                noOfSections={4}
+                maxValue={Math.max(...barData.map((d) => d.value), calorieGoal) + 200}
+                width={SCREEN_WIDTH - 64}
+                height={180}
+                isAnimated
+              />
+            </View>
+          ) : (
+            <View style={styles.emptyChart}>
+              <Text style={styles.emptyText}>No data yet this week</Text>
+            </View>
+          )}
+          <Text style={styles.goalLine}>Daily goal: {calorieGoal} kcal</Text>
+        </View>
+
+        <View style={[styles.chartSection, { marginTop: 24 }]}>
+          <View style={styles.weightHeader}>
+            <Text style={styles.sectionTitle}>Weight — Past Month</Text>
+            {weightHistory.length > 0 && (
+              <View style={styles.weightBadge}>
+                <Text style={styles.weightBadgeValue}>{weightHistory[weightHistory.length - 1].weight}</Text>
+                <Text style={styles.weightBadgeUnit}> lbs</Text>
+              </View>
+            )}
           </View>
-        ) : (
-          <View style={styles.emptyChart}>
-            <Text style={styles.emptyText}>No data yet this week</Text>
-          </View>
-        )}
-        <Text style={styles.goalLine}>Daily goal: {calorieGoal} kcal</Text>
-      </View>
-
-      <View style={[styles.chartSection, { marginTop: 24 }]}>
-        <View style={styles.weightHeader}>
-          <Text style={styles.sectionTitle}>Weight — Past Month</Text>
-          {weightHistory.length > 0 && (
-            <View style={styles.weightBadge}>
-              <Text style={styles.weightBadgeValue}>{weightHistory[weightHistory.length - 1].weight}</Text>
-              <Text style={styles.weightBadgeUnit}> lbs</Text>
+          {weightHistory.length > 0 ? (() => {
+            const weightChartData = weightHistory.map((e) => ({
+              value: e.weight,
+              label: new Date(e.logged_at!).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric' }),
+            }));
+            const allW = weightHistory.map((e) => e.weight);
+            if (weightGoal) allW.push(weightGoal);
+            const minW = Math.min(...allW) - 5;
+            const maxW = Math.max(...allW) + 5;
+            return (
+              <>
+                <View style={styles.chartWrapper}>
+                  <LineChart
+                    data={weightChartData}
+                    width={SCREEN_WIDTH - 96}
+                    height={180}
+                    color={colors.primary}
+                    thickness={2}
+                    dataPointsColor={colors.primary}
+                    dataPointsRadius={4}
+                    yAxisTextStyle={{ color: colors.muted, fontSize: 10, fontFamily: fonts.bodySemiBold }}
+                    xAxisLabelTextStyle={{ color: colors.muted, fontSize: 9, fontFamily: fonts.bodySemiBold }}
+                    yAxisThickness={0}
+                    xAxisThickness={1}
+                    xAxisColor={colors.borderLight}
+                    hideRules
+                    isAnimated
+                    yAxisOffset={minW}
+                    maxValue={maxW - minW}
+                    noOfSections={4}
+                    referenceLine1Position={weightGoal ? weightGoal - minW : undefined}
+                    referenceLine1Config={weightGoal ? { color: colors.accent, thickness: 1, width: SCREEN_WIDTH - 96 } : undefined}
+                  />
+                </View>
+                {weightGoal ? (
+                  <View style={styles.weightLegend}>
+                    <View style={styles.legendItem}>
+                      <View style={[styles.legendDot, { backgroundColor: colors.primary }]} />
+                      <Text style={styles.goalLine}>Actual</Text>
+                    </View>
+                    <View style={styles.legendItem}>
+                      <View style={[styles.legendDot, { backgroundColor: colors.accent }]} />
+                      <Text style={styles.goalLine}>Target ({weightGoal} lbs)</Text>
+                    </View>
+                  </View>
+                ) : null}
+              </>
+            );
+          })() : (
+            <View style={styles.emptyChart}>
+              <Text style={styles.emptyText}>No weight logged yet</Text>
             </View>
           )}
         </View>
-        {weightHistory.length > 0 ? (() => {
-          const weightChartData = weightHistory.map((e) => ({
-            value: e.weight,
-            label: new Date(e.logged_at!).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric' }),
-          }));
-          const allW = weightHistory.map((e) => e.weight);
-          if (weightGoal) allW.push(weightGoal);
-          const minW = Math.min(...allW) - 5;
-          const maxW = Math.max(...allW) + 5;
-          return (
-            <>
-              <View style={styles.chartWrapper}>
-                <LineChart
-                  data={weightChartData}
-                  width={SCREEN_WIDTH - 96}
-                  height={180}
-                  color="#111111"
-                  thickness={2}
-                  dataPointsColor="#111111"
-                  dataPointsRadius={4}
-                  yAxisTextStyle={{ color: '#AAAAAA', fontSize: 10 }}
-                  xAxisLabelTextStyle={{ color: '#AAAAAA', fontSize: 9 }}
-                  yAxisThickness={0}
-                  xAxisThickness={1}
-                  xAxisColor="#E5E5E5"
-                  hideRules
-                  isAnimated
-                  yAxisOffset={minW}
-                  maxValue={maxW - minW}
-                  noOfSections={4}
-                  referenceLine1Position={weightGoal ? weightGoal - minW : undefined}
-                  referenceLine1Config={weightGoal ? { color: '#CCCCCC', thickness: 1, width: SCREEN_WIDTH - 96 } : undefined}
-                />
-              </View>
-              {weightGoal ? (
-                <View style={styles.weightLegend}>
-                  <View style={styles.legendItem}>
-                    <View style={[styles.legendDot, { backgroundColor: '#111111' }]} />
-                    <Text style={styles.goalLine}>Actual</Text>
-                  </View>
-                  <View style={styles.legendItem}>
-                    <View style={[styles.legendDot, { backgroundColor: '#CCCCCC' }]} />
-                    <Text style={styles.goalLine}>Target ({weightGoal} lbs)</Text>
-                  </View>
-                </View>
-              ) : null}
-            </>
-          );
-        })() : (
-          <View style={styles.emptyChart}>
-            <Text style={styles.emptyText}>No weight logged yet</Text>
-          </View>
-        )}
-      </View>
-    </ScrollView>
+      </ScrollView>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
   },
   content: {
     paddingBottom: 32,
   },
   header: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 22,
     paddingVertical: 16,
   },
   appName: {
-    fontSize: 28,
-    fontWeight: '800',
-    color: '#111111',
-    letterSpacing: -0.5,
+    fontSize: 26,
+    fontFamily: fonts.headline,
+    color: colors.text,
   },
   dateText: {
     fontSize: 14,
-    color: '#999999',
+    fontFamily: fonts.bodySemiBold,
+    color: colors.muted,
     marginTop: 2,
   },
-  ringContainer: {
-    alignItems: 'center',
-    marginVertical: 16,
+  section: {
+    paddingHorizontal: 22,
+    marginBottom: 18,
   },
-  ringOuter: {
-    width: 180,
-    height: 180,
-    borderRadius: 90,
-    borderWidth: 12,
-    borderColor: '#E5E5E5',
-    justifyContent: 'center',
-    alignItems: 'center',
-    position: 'relative',
-  },
-  ringFill: {
-    position: 'absolute',
-    width: 180,
-    height: 180,
-    borderRadius: 90,
-    borderWidth: 12,
-    borderColor: '#111111',
-  },
-  ringInner: {
-    alignItems: 'center',
-  },
-  ringCalories: {
-    fontSize: 40,
-    fontWeight: '800',
-    color: '#111111',
-  },
-  ringLabel: {
-    fontSize: 13,
-    color: '#999999',
-    marginTop: -4,
-  },
-  ringRemaining: {
-    fontSize: 11,
-    color: '#666666',
-    marginTop: 4,
-  },
-  goalRow: {
-    flexDirection: 'row',
-    marginTop: 12,
+  calorieCard: {
+    padding: 20,
+    backgroundColor: colors.card,
+    borderRadius: radius.xl,
+    borderWidth: 1.5,
+    borderColor: colors.border,
     gap: 12,
-    alignItems: 'center',
+    ...shadow.card,
   },
-  goalText: {
-    color: '#999999',
-    fontSize: 13,
+  calorieHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'baseline',
   },
-  goalPct: {
+  calorieLabel: {
+    fontSize: 12,
+    fontFamily: fonts.bodyBold,
+    color: colors.muted,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  calorieRemaining: {
     fontSize: 13,
-    fontWeight: '700',
+    fontFamily: fonts.bodyBold,
+    color: colors.primary,
+  },
+  calorieNumberRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+  },
+  calorieConsumed: {
+    fontSize: 38,
+    fontFamily: fonts.headline,
+    color: colors.text,
+  },
+  calorieGoal: {
+    fontSize: 18,
+    fontFamily: fonts.bodySemiBold,
+    color: colors.muted,
+  },
+  calorieTrack: {
+    height: 20,
+    backgroundColor: colors.track,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 10,
+    overflow: 'hidden',
+  },
+  calorieFill: {
+    height: '100%',
+    borderRadius: 8,
   },
   macroRow: {
     flexDirection: 'row',
-    paddingHorizontal: 16,
+    paddingHorizontal: 22,
     gap: 8,
     marginBottom: 24,
   },
   macroCard: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
-    borderRadius: 12,
+    backgroundColor: colors.card,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: colors.border,
     padding: 12,
     alignItems: 'center',
+    gap: 4,
   },
   macroValue: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#111111',
+    fontSize: 16,
+    fontFamily: fonts.headlineSemiBold,
+    color: colors.text,
   },
   macroUnit: {
-    fontSize: 10,
-    color: '#999999',
-    marginTop: -2,
+    fontSize: 11,
+    fontFamily: fonts.bodySemiBold,
+    color: colors.muted,
   },
   macroLabel: {
-    fontSize: 11,
-    color: '#999999',
-    marginTop: 4,
+    fontSize: 10.5,
+    fontFamily: fonts.bodyExtraBold,
+    color: colors.muted,
+    textTransform: 'uppercase',
   },
   chartSection: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 22,
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#111111',
+    fontSize: 17,
+    fontFamily: fonts.headlineSemiBold,
+    color: colors.text,
     marginBottom: 16,
   },
   chartWrapper: {
-    backgroundColor: '#F5F5F5',
-    borderRadius: 16,
+    backgroundColor: colors.card,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: colors.border,
     padding: 16,
+    ...shadow.soft,
   },
   emptyChart: {
-    backgroundColor: '#F5F5F5',
-    borderRadius: 16,
+    backgroundColor: colors.card,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: colors.border,
     padding: 32,
     alignItems: 'center',
   },
   emptyText: {
-    color: '#AAAAAA',
+    color: colors.muted,
+    fontFamily: fonts.bodySemiBold,
     fontSize: 14,
   },
   goalLine: {
-    color: '#AAAAAA',
+    color: colors.muted,
+    fontFamily: fonts.bodySemiBold,
     fontSize: 12,
     textAlign: 'center',
     marginTop: 8,
@@ -384,14 +406,14 @@ const styles = StyleSheet.create({
     alignItems: 'baseline',
   },
   weightBadgeValue: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: '#111111',
+    fontSize: 20,
+    fontFamily: fonts.headlineSemiBold,
+    color: colors.text,
   },
   weightBadgeUnit: {
     fontSize: 13,
-    color: '#999999',
-    fontWeight: '500',
+    fontFamily: fonts.bodySemiBold,
+    color: colors.muted,
   },
   weightLegend: {
     flexDirection: 'row',

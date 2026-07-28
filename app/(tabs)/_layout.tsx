@@ -1,23 +1,55 @@
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { View } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { colors, gradients, fonts } from '../../lib/theme';
+
+function AddTabIcon({ focused }: { focused: boolean }) {
+  return (
+    <View
+      style={{
+        marginTop: -26,
+        width: 52,
+        height: 52,
+        borderRadius: 26,
+        overflow: 'hidden',
+        borderWidth: 1.5,
+        borderColor: colors.border,
+        shadowColor: colors.primaryDark,
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.3,
+        shadowRadius: 10,
+        elevation: 6,
+      }}
+    >
+      <LinearGradient
+        colors={gradients.primary}
+        style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}
+      >
+        <Ionicons name="add" size={28} color={colors.white} />
+      </LinearGradient>
+    </View>
+  );
+}
 
 export default function TabsLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: '#111111',
-        tabBarInactiveTintColor: '#AAAAAA',
+        tabBarActiveTintColor: colors.primary,
+        tabBarInactiveTintColor: colors.muted,
         tabBarHideOnKeyboard: true,
         tabBarStyle: {
-          backgroundColor: '#FFFFFF',
-          borderTopColor: '#E5E5E5',
-          borderTopWidth: 1,
-          height: 60,
-          paddingBottom: 8,
+          backgroundColor: colors.card,
+          borderTopColor: colors.borderLight,
+          borderTopWidth: 1.5,
+          height: 64,
+          paddingBottom: 10,
+          paddingTop: 8,
         },
         tabBarLabelStyle: {
-          fontSize: 11,
-          fontWeight: '600',
+          fontFamily: fonts.bodyExtraBold,
+          fontSize: 10.5,
         },
         headerShown: false,
       }}
@@ -25,7 +57,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Dashboard',
+          title: 'Home',
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="home" size={size} color={color} />
           ),
@@ -43,10 +75,8 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="add"
         options={{
-          title: 'Add',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="add-circle" size={size} color={color} />
-          ),
+          title: '',
+          tabBarIcon: ({ focused }) => <AddTabIcon focused={focused} />,
         }}
       />
       <Tabs.Screen

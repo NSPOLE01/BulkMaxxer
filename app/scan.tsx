@@ -3,8 +3,10 @@ import { View, Text, StyleSheet, TouchableOpacity, Alert, ActivityIndicator } fr
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CameraView, useCameraPermissions, BarcodeScanningResult } from 'expo-camera';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { lookupBarcode } from '../lib/api';
+import { colors, gradients, fonts, radius } from '../lib/theme';
 
 export default function ScanScreen() {
   const insets = useSafeAreaInsets();
@@ -62,24 +64,26 @@ export default function ScanScreen() {
 
   if (!permission) {
     return (
-      <View style={[styles.container, styles.center]}>
-        <ActivityIndicator color="#FFFFFF" size="large" />
-      </View>
+      <LinearGradient colors={gradients.background} style={[styles.container, styles.center]}>
+        <ActivityIndicator color={colors.primary} size="large" />
+      </LinearGradient>
     );
   }
 
   if (!permission.granted) {
     return (
-      <View style={[styles.container, styles.center, { paddingBottom: insets.bottom }]}>
-        <Ionicons name="camera-outline" size={64} color="#333" />
+      <LinearGradient colors={gradients.background} style={[styles.container, styles.center, { paddingBottom: insets.bottom }]}>
+        <Ionicons name="camera-outline" size={64} color={colors.muted} />
         <Text style={styles.permTitle}>Camera Access Required</Text>
         <Text style={styles.permSubtitle}>
           BulkMaxxer needs camera access to scan barcodes
         </Text>
-        <TouchableOpacity style={styles.permBtn} onPress={requestPermission}>
-          <Text style={styles.permBtnText}>Grant Permission</Text>
+        <TouchableOpacity onPress={requestPermission} style={styles.permBtnWrap} activeOpacity={0.85}>
+          <LinearGradient colors={gradients.primary} style={styles.permBtn}>
+            <Text style={styles.permBtnText}>Grant Permission</Text>
+          </LinearGradient>
         </TouchableOpacity>
-      </View>
+      </LinearGradient>
     );
   }
 
@@ -157,28 +161,30 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     gap: 16,
-    backgroundColor: '#FFFFFF',
   },
   permTitle: {
     fontSize: 20,
-    fontWeight: '700',
-    color: '#111111',
+    fontFamily: fonts.headlineSemiBold,
+    color: colors.text,
   },
   permSubtitle: {
     fontSize: 14,
-    color: '#999999',
+    fontFamily: fonts.bodySemiBold,
+    color: colors.muted,
     textAlign: 'center',
     paddingHorizontal: 32,
   },
+  permBtnWrap: {
+    borderRadius: radius.md,
+    overflow: 'hidden',
+  },
   permBtn: {
-    backgroundColor: '#111111',
-    borderRadius: 12,
     paddingHorizontal: 24,
     paddingVertical: 14,
   },
   permBtnText: {
-    color: '#FFFFFF',
-    fontWeight: '700',
+    color: colors.white,
+    fontFamily: fonts.bodyBold,
     fontSize: 16,
   },
   overlay: {
@@ -206,7 +212,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width: CORNER_SIZE,
     height: CORNER_SIZE,
-    borderColor: '#FFFFFF',
+    borderColor: colors.accent,
   },
   cornerTL: {
     top: 0,

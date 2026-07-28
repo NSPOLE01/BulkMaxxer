@@ -10,9 +10,12 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect } from 'expo-router';
 import { useAuth } from '../../lib/auth';
 import { getTodayLog, deleteFoodEntry, FoodEntry } from '../../lib/api';
+import { getCalorieGoal } from '../../lib/goals';
+import { colors, gradients, fonts, radius, shadow } from '../../lib/theme';
 
 function FoodItem({ item, onDelete }: { item: FoodEntry; onDelete: (id: string) => void }) {
   const time = item.eaten_at
@@ -53,7 +56,7 @@ function FoodItem({ item, onDelete }: { item: FoodEntry; onDelete: (id: string) 
         <Text style={styles.itemCalories}>{Math.round(Number(item.calories))}</Text>
         <Text style={styles.itemKcal}>kcal</Text>
         <TouchableOpacity onPress={handleDelete} style={styles.deleteBtn}>
-          <Ionicons name="trash-outline" size={18} color="#FF3B30" />
+          <Ionicons name="trash-outline" size={17} color={colors.primaryDark} />
         </TouchableOpacity>
       </View>
     </View>
@@ -64,13 +67,15 @@ export default function LogScreen() {
   const { user } = useAuth();
   const insets = useSafeAreaInsets();
   const [entries, setEntries] = useState<FoodEntry[]>([]);
+  const [calorieGoal, setCalorieGoal] = useState(2000);
   const [refreshing, setRefreshing] = useState(false);
 
   const loadEntries = useCallback(async () => {
     if (!user) return;
     try {
-      const data = await getTodayLog(user.uid);
+      const [data, goal] = await Promise.all([getTodayLog(user.uid), getCalorieGoal()]);
       setEntries(data);
+      setCalorieGoal(goal);
     } catch (e) {
       console.error('Failed to load log', e);
     }
@@ -98,16 +103,27 @@ export default function LogScreen() {
   };
 
   const totalCalories = entries.reduce((s, e) => s + Number(e.calories), 0);
+  const remaining = Math.max(0, calorieGoal - totalCalories);
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
+    <LinearGradient colors={gradients.background} style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.header}>
-        <Text style={styles.title}>Today's Log</Text>
-        {entries.length > 0 && (
-          <View style={styles.totalBadge}>
-            <Text style={styles.totalText}>{Math.round(totalCalories)} kcal</Text>
-          </View>
-        )}
+        <Text style={styles.title}>Food Log</Text>
+      </View>
+
+      <View style={styles.summaryCard}>
+        <View style={styles.summaryCol}>
+          <Text style={styles.summaryLabel}>Consumed</Text>
+          <Text style={styles.summaryValue}>{Math.round(totalCalories)}</Text>
+        </View>
+        <View style={styles.summaryCol}>
+          <Text style={styles.summaryLabel}>Goal</Text>
+          <Text style={styles.summaryValue}>{calorieGoal}</Text>
+        </View>
+        <View style={styles.summaryCol}>
+          <Text style={styles.summaryLabel}>Left</Text>
+          <Text style={[styles.summaryValue, { color: colors.primary }]}>{Math.round(remaining)}</Text>
+        </View>
       </View>
 
       <FlatList
@@ -120,7 +136,7 @@ export default function LogScreen() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            tintColor="#111111"
+            tintColor={colors.primary}
           />
         }
         contentContainerStyle={
@@ -128,52 +144,64 @@ export default function LogScreen() {
         }
         ListEmptyComponent={
           <View style={styles.empty}>
-            <Ionicons name="restaurant-outline" size={64} color="#DDDDDD" />
-            <Text style={styles.emptyTitle}>No entries yet</Text>
+            <Ionicons name="restaurant-outline" size={56} color={colors.muted} />
+            <Text style={styles.emptyTitle}>No food logged yet today</Text>
             <Text style={styles.emptySubtitle}>
-              Tap the Add tab to log your first meal today
+              Tap the Add tab to log your first meal
             </Text>
           </View>
         }
       />
-    </View>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 20,
+    paddingHorizontal: 22,
     paddingVertical: 16,
   },
   title: {
-    fontSize: 26,
-    fontWeight: '800',
-    color: '#111111',
+    fontSize: 24,
+    fontFamily: fonts.headline,
+    color: colors.text,
   },
-  totalBadge: {
-    backgroundColor: '#F5F5F5',
-    borderRadius: 20,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+  summaryCard: {
+    flexDirection: 'row',
+    marginHorizontal: 22,
+    marginBottom: 16,
+    padding: 16,
+    backgroundColor: colors.card,
+    borderRadius: radius.lg,
     borderWidth: 1,
-    borderColor: '#E5E5E5',
+    borderColor: colors.border,
+    ...shadow.soft,
   },
-  totalText: {
-    color: '#111111',
-    fontWeight: '700',
-    fontSize: 14,
+  summaryCol: {
+    flex: 1,
+    gap: 4,
+  },
+  summaryLabel: {
+    fontSize: 10.5,
+    fontFamily: fonts.bodyBold,
+    color: colors.muted,
+    textTransform: 'uppercase',
+  },
+  summaryValue: {
+    fontSize: 18,
+    fontFamily: fonts.headlineSemiBold,
+    color: colors.text,
   },
   listContent: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 22,
     paddingBottom: 32,
-    gap: 8,
+    gap: 10,
   },
   emptyContainer: {
     flexGrow: 1,
@@ -182,22 +210,26 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 12,
-  },
-  emptyTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#CCCCCC',
-  },
-  emptySubtitle: {
-    fontSize: 14,
-    color: '#CCCCCC',
-    textAlign: 'center',
+    gap: 10,
     paddingHorizontal: 40,
   },
+  emptyTitle: {
+    fontSize: 16,
+    fontFamily: fonts.bodyBold,
+    color: colors.muted,
+    textAlign: 'center',
+  },
+  emptySubtitle: {
+    fontSize: 13,
+    fontFamily: fonts.bodySemiBold,
+    color: colors.muted,
+    textAlign: 'center',
+  },
   itemContainer: {
-    backgroundColor: '#F5F5F5',
-    borderRadius: 12,
+    backgroundColor: colors.card,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: colors.border,
     padding: 14,
     flexDirection: 'row',
     alignItems: 'center',
@@ -207,23 +239,26 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   itemName: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#111111',
+    fontSize: 15,
+    fontFamily: fonts.bodyBold,
+    color: colors.text,
     marginBottom: 4,
   },
   itemMacros: {
     fontSize: 11,
-    color: '#999999',
+    fontFamily: fonts.bodySemiBold,
+    color: colors.muted,
   },
   itemServing: {
     fontSize: 11,
-    color: '#AAAAAA',
+    fontFamily: fonts.body,
+    color: colors.muted,
     marginTop: 2,
   },
   itemTime: {
     fontSize: 11,
-    color: '#BBBBBB',
+    fontFamily: fonts.body,
+    color: colors.muted,
     marginTop: 4,
   },
   itemRight: {
@@ -231,13 +266,14 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   itemCalories: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: '#111111',
+    fontSize: 20,
+    fontFamily: fonts.headlineSemiBold,
+    color: colors.text,
   },
   itemKcal: {
     fontSize: 10,
-    color: '#AAAAAA',
+    fontFamily: fonts.bodySemiBold,
+    color: colors.muted,
   },
   deleteBtn: {
     marginTop: 8,

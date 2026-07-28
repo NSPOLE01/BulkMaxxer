@@ -10,8 +10,10 @@ import {
   ScrollView,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect } from 'expo-router';
 import { getCalorieGoal, saveCalorieGoal, getWeightGoal, saveWeightGoal } from '../../lib/goals';
+import { colors, gradients, fonts, radius, shadow } from '../../lib/theme';
 
 const PRESETS = [1500, 1800, 2000, 2200, 2500];
 
@@ -72,7 +74,7 @@ export default function GoalsScreen() {
 
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
+    <LinearGradient colors={gradients.background} style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.header}>
         <Text style={styles.title}>Goals</Text>
       </View>
@@ -98,7 +100,7 @@ export default function GoalsScreen() {
               keyboardType="decimal-pad"
               returnKeyType="done"
               placeholder="0"
-              placeholderTextColor="#CCCCCC"
+              placeholderTextColor={colors.muted}
               maxLength={6}
               selectTextOnFocus
             />
@@ -144,51 +146,55 @@ export default function GoalsScreen() {
         </View>
 
         <TouchableOpacity
-          style={[styles.saveBtn, saving && styles.saveBtnDisabled]}
           onPress={handleSaveGoals}
           disabled={saving}
-          activeOpacity={0.8}
+          activeOpacity={0.85}
+          style={[styles.saveBtnWrap, saving && styles.saveBtnDisabled]}
         >
-          {saving ? (
-            <ActivityIndicator color="#FFFFFF" />
-          ) : (
-            <Text style={styles.saveBtnText}>{saved ? 'Saved' : 'Save Goals'}</Text>
-          )}
+          <LinearGradient colors={gradients.primary} style={styles.saveBtn}>
+            {saving ? (
+              <ActivityIndicator color={colors.white} />
+            ) : (
+              <Text style={styles.saveBtnText}>{saved ? 'Saved' : 'Save Goals'}</Text>
+            )}
+          </LinearGradient>
         </TouchableOpacity>
       </ScrollView>
-    </View>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
   },
   header: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 22,
     paddingVertical: 16,
   },
   title: {
-    fontSize: 26,
-    fontWeight: '800',
-    color: '#111111',
+    fontSize: 24,
+    fontFamily: fonts.headline,
+    color: colors.text,
   },
   scrollContent: {
     paddingHorizontal: 16,
     gap: 12,
   },
   section: {
-    backgroundColor: '#F5F5F5',
-    borderRadius: 20,
+    backgroundColor: colors.card,
+    borderRadius: radius.xl,
+    borderWidth: 1.5,
+    borderColor: colors.border,
     padding: 20,
     alignItems: 'center',
     gap: 12,
+    ...shadow.card,
   },
   sectionLabel: {
     fontSize: 11,
-    fontWeight: '700',
-    color: '#AAAAAA',
+    fontFamily: fonts.bodyExtraBold,
+    color: colors.muted,
     letterSpacing: 1,
     alignSelf: 'flex-start',
   },
@@ -198,9 +204,9 @@ const styles = StyleSheet.create({
   },
   dividerText: {
     fontSize: 11,
-    fontWeight: '700',
-    color: '#CCCCCC',
-    letterSpacing: 1,
+    fontFamily: fonts.bodyExtraBold,
+    color: colors.muted,
+    letterSpacing: 1.5,
   },
   weightRow: {
     flexDirection: 'row',
@@ -209,16 +215,16 @@ const styles = StyleSheet.create({
   },
   goalInput: {
     fontSize: 52,
-    fontWeight: '800',
-    color: '#111111',
+    fontFamily: fonts.headline,
+    color: colors.text,
     minWidth: 120,
     textAlign: 'center',
     letterSpacing: -1,
   },
   weightUnit: {
     fontSize: 20,
-    fontWeight: '600',
-    color: '#999999',
+    fontFamily: fonts.bodyBold,
+    color: colors.muted,
   },
   stepper: {
     flexDirection: 'row',
@@ -229,28 +235,30 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: '#E8E8E8',
+    backgroundColor: colors.cardAlt,
+    borderWidth: 1,
+    borderColor: colors.border,
     justifyContent: 'center',
     alignItems: 'center',
   },
   stepBtnText: {
     fontSize: 24,
-    fontWeight: '300',
-    color: '#111111',
+    fontFamily: fonts.headlineMedium,
+    color: colors.primaryDark,
     lineHeight: 28,
   },
   calorieInput: {
     fontSize: 52,
-    fontWeight: '800',
-    color: '#111111',
+    fontFamily: fonts.headline,
+    color: colors.text,
     minWidth: 140,
     textAlign: 'center',
     letterSpacing: -1,
   },
   unit: {
     fontSize: 14,
-    color: '#999999',
-    fontWeight: '500',
+    fontFamily: fonts.bodySemiBold,
+    color: colors.muted,
     marginTop: -4,
   },
   presets: {
@@ -262,33 +270,38 @@ const styles = StyleSheet.create({
   presetBtn: {
     paddingHorizontal: 16,
     paddingVertical: 8,
-    borderRadius: 20,
-    backgroundColor: '#EBEBEB',
+    borderRadius: radius.pill,
+    backgroundColor: colors.cardAlt,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   presetBtnActive: {
-    backgroundColor: '#111111',
+    backgroundColor: colors.primary,
+    borderColor: colors.primaryDark,
   },
   presetText: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#666666',
+    fontFamily: fonts.bodyBold,
+    color: colors.muted,
   },
   presetTextActive: {
-    color: '#FFFFFF',
+    color: colors.white,
   },
-  saveBtn: {
-    backgroundColor: '#111111',
-    borderRadius: 14,
-    paddingVertical: 18,
-    alignItems: 'center',
+  saveBtnWrap: {
+    borderRadius: radius.md,
+    overflow: 'hidden',
     marginTop: 4,
   },
+  saveBtn: {
+    paddingVertical: 18,
+    alignItems: 'center',
+  },
   saveBtnDisabled: {
-    opacity: 0.5,
+    opacity: 0.6,
   },
   saveBtnText: {
-    color: '#FFFFFF',
-    fontWeight: '700',
+    color: colors.white,
+    fontFamily: fonts.bodyBold,
     fontSize: 17,
   },
 });
