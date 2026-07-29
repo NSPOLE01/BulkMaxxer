@@ -11,13 +11,28 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from 'expo-router';
 import { useAuth } from '../../lib/auth';
 import { getWeightHistory, getLoggingStreak } from '../../lib/api';
-import { getCalorieGoal, saveCalorieGoal, getWeightGoal, saveWeightGoal } from '../../lib/goals';
+import {
+  getCalorieGoal,
+  saveCalorieGoal,
+  getWeightGoal,
+  saveWeightGoal,
+  getGoalType,
+  saveGoalType,
+  GoalType,
+} from '../../lib/goals';
 import { colors, gradients, fonts, radius, shadow } from '../../lib/theme';
 
 const PRESETS = [1500, 1800, 2000, 2200, 2500];
+
+const GOAL_TYPE_OPTIONS: { id: GoalType; letter: string; label: string; desc: string }[] = [
+  { id: 'bulk', letter: 'B', label: 'Bulk Up', desc: 'Eat in a surplus, build muscle' },
+  { id: 'maintain', letter: 'M', label: 'Maintain', desc: 'Stay steady at your weight' },
+  { id: 'cut', letter: 'C', label: 'Cut', desc: 'Eat in a deficit, lean out' },
+];
 
 export default function GoalsScreen() {
   const insets = useSafeAreaInsets();
@@ -25,15 +40,17 @@ export default function GoalsScreen() {
 
   const [calorieInput, setCalorieInput] = useState('');
   const [weightGoalInput, setWeightGoalInput] = useState('');
+  const [goalType, setGoalType] = useState<GoalType>('bulk');
   const [currentWeight, setCurrentWeight] = useState<number | null>(null);
   const [streak, setStreak] = useState(0);
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
 
   const loadData = useCallback(async () => {
-    const [cal, weightGoal] = await Promise.all([getCalorieGoal(), getWeightGoal()]);
+    const [cal, weightGoal, type] = await Promise.all([getCalorieGoal(), getWeightGoal(), getGoalType()]);
     setCalorieInput(String(cal));
     setWeightGoalInput(weightGoal !== null ? String(weightGoal) : '');
+    setGoalType(type);
 
     if (user) {
       const [history, streakDays] = await Promise.all([
@@ -66,12 +83,18 @@ export default function GoalsScreen() {
     try {
       await saveCalorieGoal(cal);
       if (weightGoalInput) await saveWeightGoal(Number(weightGoalInput));
+      await saveGoalType(goalType);
       setSaved(true);
     } catch {
       Alert.alert('Error', 'Failed to save goals. Please try again.');
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleSelectGoalType = (type: GoalType) => {
+    setGoalType(type);
+    setSaved(false);
   };
 
   const handlePreset = (val: number) => {
@@ -112,6 +135,41 @@ export default function GoalsScreen() {
             <Text style={styles.statValue}>{streak}</Text>
             <Text style={styles.statLabel}>DAY STREAK</Text>
           </View>
+        </View>
+
+        <View style={styles.divider}>
+          <Text style={styles.dividerText}>GOAL TYPE</Text>
+        </View>
+
+        <View style={styles.goalTypeList}>
+          {GOAL_TYPE_OPTIONS.map((opt) => {
+            const selected = opt.id === goalType;
+            return (
+              <TouchableOpacity
+                key={opt.id}
+                style={[styles.goalTypeCard, selected && styles.goalTypeCardActive]}
+                onPress={() => handleSelectGoalType(opt.id)}
+                activeOpacity={0.8}
+              >
+                {selected ? (
+                  <LinearGradient colors={gradients.primary} style={styles.goalTypeChip}>
+                    <Text style={styles.goalTypeChipTextActive}>{opt.letter}</Text>
+                  </LinearGradient>
+                ) : (
+                  <View style={styles.goalTypeChip}>
+                    <Text style={styles.goalTypeChipText}>{opt.letter}</Text>
+                  </View>
+                )}
+                <View style={styles.goalTypeText}>
+                  <Text style={styles.goalTypeLabel}>{opt.label}</Text>
+                  <Text style={styles.goalTypeDesc}>{opt.desc}</Text>
+                </View>
+                {selected && (
+                  <Ionicons name="checkmark-circle" size={22} color={colors.primary} />
+                )}
+              </TouchableOpacity>
+            );
+          })}
         </View>
 
         <View style={styles.divider}>
@@ -249,6 +307,55 @@ const styles = StyleSheet.create({
     fontFamily: fonts.bodyExtraBold,
     color: colors.muted,
     letterSpacing: 1.5,
+  },
+  goalTypeList: {
+    gap: 10,
+  },
+  goalTypeCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+    backgroundColor: colors.card,
+    borderRadius: radius.lg,
+    borderWidth: 1.5,
+    borderColor: colors.border,
+    padding: 14,
+    ...shadow.soft,
+  },
+  goalTypeCardActive: {
+    borderColor: colors.primary,
+  },
+  goalTypeChip: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.cardAlt,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  goalTypeChipText: {
+    fontSize: 16,
+    fontFamily: fonts.headlineSemiBold,
+    color: colors.text,
+  },
+  goalTypeChipTextActive: {
+    fontSize: 16,
+    fontFamily: fonts.headlineSemiBold,
+    color: colors.white,
+  },
+  goalTypeText: {
+    flex: 1,
+  },
+  goalTypeLabel: {
+    fontSize: 16,
+    fontFamily: fonts.headlineSemiBold,
+    color: colors.text,
+  },
+  goalTypeDesc: {
+    fontSize: 12.5,
+    fontFamily: fonts.bodySemiBold,
+    color: colors.muted,
+    marginTop: 1,
   },
   card: {
     backgroundColor: colors.card,
