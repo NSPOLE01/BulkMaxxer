@@ -222,6 +222,39 @@ export async function getWeightHistory(userId: string, days = 30): Promise<Weigh
   });
 }
 
+export async function getLoggingStreak(userId: string, lookbackDays = 120): Promise<number> {
+  const start = new Date();
+  start.setDate(start.getDate() - lookbackDays);
+  start.setHours(0, 0, 0, 0);
+
+  const q = query(
+    collection(db, 'food_log'),
+    where('user_id', '==', userId),
+    where('eaten_at', '>=', Timestamp.fromDate(start))
+  );
+
+  const snapshot = await getDocs(q);
+  const loggedDays = new Set<string>();
+  for (const docSnap of snapshot.docs) {
+    const data = docSnap.data();
+    const date = (data.eaten_at as Timestamp).toDate().toISOString().split('T')[0];
+    loggedDays.add(date);
+  }
+
+  const cursor = new Date();
+  cursor.setHours(0, 0, 0, 0);
+  if (!loggedDays.has(cursor.toISOString().split('T')[0])) {
+    cursor.setDate(cursor.getDate() - 1);
+  }
+
+  let streak = 0;
+  while (loggedDays.has(cursor.toISOString().split('T')[0])) {
+    streak += 1;
+    cursor.setDate(cursor.getDate() - 1);
+  }
+  return streak;
+}
+
 function getNutrimentValue(nutriments: Record<string, unknown>, key: string): number {
   const val = nutriments?.[key];
   return typeof val === 'number' ? Math.round(val * 10) / 10 : 0;

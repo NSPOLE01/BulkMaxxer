@@ -12,6 +12,8 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect } from 'expo-router';
+import { useAuth } from '../../lib/auth';
+import { getWeightHistory, getLoggingStreak } from '../../lib/api';
 import { getCalorieGoal, saveCalorieGoal, getWeightGoal, saveWeightGoal } from '../../lib/goals';
 import { colors, gradients, fonts, radius, shadow } from '../../lib/theme';
 
@@ -19,9 +21,12 @@ const PRESETS = [1500, 1800, 2000, 2200, 2500];
 
 export default function GoalsScreen() {
   const insets = useSafeAreaInsets();
+  const { user } = useAuth();
 
   const [calorieInput, setCalorieInput] = useState('');
   const [weightGoalInput, setWeightGoalInput] = useState('');
+  const [currentWeight, setCurrentWeight] = useState<number | null>(null);
+  const [streak, setStreak] = useState(0);
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
 
@@ -29,7 +34,16 @@ export default function GoalsScreen() {
     const [cal, weightGoal] = await Promise.all([getCalorieGoal(), getWeightGoal()]);
     setCalorieInput(String(cal));
     setWeightGoalInput(weightGoal !== null ? String(weightGoal) : '');
-  }, []);
+
+    if (user) {
+      const [history, streakDays] = await Promise.all([
+        getWeightHistory(user.uid, 90),
+        getLoggingStreak(user.uid),
+      ]);
+      setCurrentWeight(history.length > 0 ? history[history.length - 1].weight : null);
+      setStreak(streakDays);
+    }
+  }, [user]);
 
   useFocusEffect(
     useCallback(() => {
@@ -85,6 +99,21 @@ export default function GoalsScreen() {
         keyboardDismissMode="on-drag"
         automaticallyAdjustKeyboardInsets
       >
+        <View style={styles.statsRow}>
+          <View style={styles.statTile}>
+            <Text style={styles.statValue}>{currentWeight !== null ? Math.round(currentWeight) : '—'}</Text>
+            <Text style={styles.statLabel}>LBS NOW</Text>
+          </View>
+          <View style={styles.statTile}>
+            <Text style={styles.statValue}>{weightGoalInput || '—'}</Text>
+            <Text style={styles.statLabel}>LBS GOAL</Text>
+          </View>
+          <View style={styles.statTile}>
+            <Text style={styles.statValue}>{streak}</Text>
+            <Text style={styles.statLabel}>DAY STREAK</Text>
+          </View>
+        </View>
+
         <View style={styles.divider}>
           <Text style={styles.dividerText}>YOUR GOALS</Text>
         </View>
@@ -184,6 +213,32 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingHorizontal: 16,
     gap: 16,
+  },
+  statsRow: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  statTile: {
+    flex: 1,
+    backgroundColor: colors.card,
+    borderRadius: radius.lg,
+    borderWidth: 1.5,
+    borderColor: colors.border,
+    paddingVertical: 18,
+    alignItems: 'center',
+    gap: 6,
+    ...shadow.soft,
+  },
+  statValue: {
+    fontSize: 24,
+    fontFamily: fonts.headline,
+    color: colors.text,
+  },
+  statLabel: {
+    fontSize: 10.5,
+    fontFamily: fonts.bodyExtraBold,
+    color: colors.muted,
+    letterSpacing: 0.4,
   },
   divider: {
     alignItems: 'center',
