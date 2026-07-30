@@ -12,7 +12,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { BarChart, LineChart } from 'react-native-gifted-charts';
 import { useAuth } from '../../lib/auth';
 import { getTodayLog, getWeekLog, getWeightHistory, FoodEntry, WeekDay, WeightEntry } from '../../lib/api';
-import { getCalorieGoal, getWeightGoal } from '../../lib/goals';
+import { getUserGoals } from '../../lib/goals';
 import { useFocusEffect } from 'expo-router';
 import { colors, gradients, fonts, radius, shadow } from '../../lib/theme';
 
@@ -71,17 +71,16 @@ export default function DashboardScreen() {
   const loadData = useCallback(async () => {
     if (!user) return;
     try {
-      const [todayEntries, week, goal, wGoal, wHistory] = await Promise.all([
+      const [todayEntries, week, userGoals, wHistory] = await Promise.all([
         getTodayLog(user.uid),
         getWeekLog(user.uid),
-        getCalorieGoal(),
-        getWeightGoal(),
+        getUserGoals(user.uid),
         getWeightHistory(user.uid, 30),
       ]);
       setEntries(todayEntries);
       setWeekData(week);
-      setCalorieGoal(goal);
-      setWeightGoal(wGoal);
+      setCalorieGoal(userGoals.calorieGoal);
+      setWeightGoal(userGoals.weightGoal);
       setWeightHistory(wHistory);
     } catch (e) {
       console.error('Failed to load dashboard data', e);

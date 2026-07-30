@@ -14,7 +14,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect } from 'expo-router';
 import { useAuth } from '../../lib/auth';
 import { getTodayLog, deleteFoodEntry, FoodEntry } from '../../lib/api';
-import { getCalorieGoal } from '../../lib/goals';
+import { getUserGoals } from '../../lib/goals';
 import { colors, gradients, fonts, radius, shadow } from '../../lib/theme';
 
 function FoodItem({ item, onDelete }: { item: FoodEntry; onDelete: (id: string) => void }) {
@@ -73,9 +73,9 @@ export default function LogScreen() {
   const loadEntries = useCallback(async () => {
     if (!user) return;
     try {
-      const [data, goal] = await Promise.all([getTodayLog(user.uid), getCalorieGoal()]);
+      const [data, userGoals] = await Promise.all([getTodayLog(user.uid), getUserGoals(user.uid)]);
       setEntries(data);
-      setCalorieGoal(goal);
+      setCalorieGoal(userGoals.calorieGoal);
     } catch (e) {
       console.error('Failed to load log', e);
     }

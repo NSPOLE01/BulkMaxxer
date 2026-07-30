@@ -18,15 +18,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from 'expo-router';
 import { useAuth } from '../../lib/auth';
 import { getWeightHistory, getLoggingStreak, logWeight } from '../../lib/api';
-import {
-  getCalorieGoal,
-  saveCalorieGoal,
-  getWeightGoal,
-  saveWeightGoal,
-  getGoalType,
-  saveGoalType,
-  GoalType,
-} from '../../lib/goals';
+import { getUserGoals, saveUserGoals, GoalType, UserGoals } from '../../lib/goals';
 import { colors, gradients, fonts, radius, shadow } from '../../lib/theme';
 
 const PRESETS = [1500, 1800, 2000, 2200, 2500];
@@ -55,19 +47,17 @@ export default function GoalsScreen() {
   const [modalSaving, setModalSaving] = useState(false);
 
   const loadData = useCallback(async () => {
-    const [cal, weightGoal, type] = await Promise.all([getCalorieGoal(), getWeightGoal(), getGoalType()]);
-    setCalorieInput(String(cal));
-    setWeightGoalInput(weightGoal !== null ? String(weightGoal) : '');
-    setGoalType(type);
-
-    if (user) {
-      const [history, streakDays] = await Promise.all([
-        getWeightHistory(user.uid, 90),
-        getLoggingStreak(user.uid),
-      ]);
-      setCurrentWeight(history.length > 0 ? history[history.length - 1].weight : null);
-      setStreak(streakDays);
-    }
+    if (!user) return;
+    const [userGoals, history, streakDays] = await Promise.all([
+      getUserGoals(user.uid),
+      getWeightHistory(user.uid, 90),
+      getLoggingStreak(user.uid),
+    ]);
+    setCalorieInput(String(userGoals.calorieGoal));
+    setWeightGoalInput(userGoals.weightGoal !== null ? String(userGoals.weightGoal) : '');
+    setGoalType(userGoals.goalType);
+    setCurrentWeight(history.length > 0 ? history[history.length - 1].weight : null);
+    setStreak(streakDays);
   }, [user]);
 
   useFocusEffect(
@@ -78,6 +68,7 @@ export default function GoalsScreen() {
   );
 
   const handleSaveGoals = async () => {
+    if (!user) return;
     const cal = Number(calorieInput);
     if (!calorieInput || isNaN(cal) || cal < 500 || cal > 10000) {
       Alert.alert('Invalid Goal', 'Please enter a calorie goal between 500 and 10,000.');
@@ -89,9 +80,9 @@ export default function GoalsScreen() {
     }
     setSaving(true);
     try {
-      await saveCalorieGoal(cal);
-      if (weightGoalInput) await saveWeightGoal(Number(weightGoalInput));
-      await saveGoalType(goalType);
+      const patch: Partial<UserGoals> = { calorieGoal: cal, goalType };
+      if (weightGoalInput) patch.weightGoal = Number(weightGoalInput);
+      await saveUserGoals(user.uid, patch);
       setSaved(true);
     } catch {
       Alert.alert('Error', 'Failed to save goals. Please try again.');
@@ -112,7 +103,7 @@ export default function GoalsScreen() {
   };
 
   const handleModalSave = async () => {
-    if (!modalType) return;
+    if (!modalType || !user) return;
     const curVal = Number(modalCurrentWeight);
     const goalVal = Number(modalGoalWeight);
     if (!modalCurrentWeight || isNaN(curVal) || curVal <= 0) {
@@ -126,9 +117,8 @@ export default function GoalsScreen() {
 
     setModalSaving(true);
     try {
-      if (user) await logWeight(user.uid, curVal);
-      await saveWeightGoal(goalVal);
-      await saveGoalType(modalType);
+      await logWeight(user.uid, curVal);
+      await saveUserGoals(user.uid, { weightGoal: goalVal, goalType: modalType });
       setGoalType(modalType);
       setCurrentWeight(curVal);
       setWeightGoalInput(String(goalVal));
