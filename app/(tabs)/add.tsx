@@ -13,7 +13,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router, useFocusEffect } from 'expo-router';
 import { useAuth } from '../../lib/auth';
-import { logWeight, getWeightHistory, WeightEntry } from '../../lib/api';
+import { logWeight, getWeightHistory, isToday, WeightEntry } from '../../lib/api';
 import { colors, gradients, fonts, radius, shadow } from '../../lib/theme';
 
 interface OptionCardProps {
@@ -58,10 +58,7 @@ export default function AddScreen() {
     }, [loadHistory])
   );
 
-  const todayStr = new Date().toISOString().split('T')[0];
-  const hasLoggedToday = weightHistory.some(
-    (e) => e.logged_at && e.logged_at.split('T')[0] === todayStr
-  );
+  const hasLoggedToday = weightHistory.some((e) => e.logged_at && isToday(e.logged_at));
 
   const handleLogWeight = async () => {
     if (!user) return;

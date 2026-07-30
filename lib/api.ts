@@ -189,6 +189,19 @@ export interface WeightEntry {
   logged_at?: string;
 }
 
+// Compares calendar days in the device's local timezone, not UTC — an ISO
+// string sliced to its date portion (`"...".split('T')[0]`) drifts a day off
+// near midnight for any timezone offset from UTC.
+export function isToday(isoDateString: string): boolean {
+  const d = new Date(isoDateString);
+  const now = new Date();
+  return (
+    d.getFullYear() === now.getFullYear() &&
+    d.getMonth() === now.getMonth() &&
+    d.getDate() === now.getDate()
+  );
+}
+
 export async function logWeight(userId: string, weight: number): Promise<void> {
   await addDoc(collection(db, 'weight_log'), {
     user_id: userId,

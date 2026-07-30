@@ -17,7 +17,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from 'expo-router';
 import { useAuth } from '../../lib/auth';
-import { getWeightHistory, getLoggingStreak, logWeight } from '../../lib/api';
+import { getWeightHistory, getLoggingStreak, logWeight, isToday, WeightEntry } from '../../lib/api';
 import { getUserGoals, saveUserGoals, GoalType, UserGoals } from '../../lib/goals';
 import { colors, gradients, fonts, radius, shadow } from '../../lib/theme';
 
@@ -36,7 +36,7 @@ export default function GoalsScreen() {
   const [calorieInput, setCalorieInput] = useState('');
   const [weightGoalInput, setWeightGoalInput] = useState('');
   const [goalType, setGoalType] = useState<GoalType>('bulk');
-  const [currentWeight, setCurrentWeight] = useState<number | null>(null);
+  const [weightHistory, setWeightHistory] = useState<WeightEntry[]>([]);
   const [streak, setStreak] = useState(0);
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -56,7 +56,7 @@ export default function GoalsScreen() {
     setCalorieInput(String(userGoals.calorieGoal));
     setWeightGoalInput(userGoals.weightGoal !== null ? String(userGoals.weightGoal) : '');
     setGoalType(userGoals.goalType);
-    setCurrentWeight(history.length > 0 ? history[history.length - 1].weight : null);
+    setWeightHistory(history);
     setStreak(streakDays);
   }, [user]);
 
@@ -92,7 +92,9 @@ export default function GoalsScreen() {
   };
 
   const openGoalTypeModal = (type: GoalType) => {
-    setModalCurrentWeight(currentWeight !== null ? String(currentWeight) : '');
+    setModalCurrentWeight(
+      todayWeightEntry ? String(todayWeightEntry.weight) : currentWeight !== null ? String(currentWeight) : ''
+    );
     setModalGoalWeight(weightGoalInput);
     setModalType(type);
   };
@@ -104,23 +106,31 @@ export default function GoalsScreen() {
 
   const handleModalSave = async () => {
     if (!modalType || !user) return;
-    const curVal = Number(modalCurrentWeight);
     const goalVal = Number(modalGoalWeight);
-    if (!modalCurrentWeight || isNaN(curVal) || curVal <= 0) {
-      Alert.alert('Invalid Weight', 'Please enter a valid current weight.');
-      return;
-    }
     if (!modalGoalWeight || isNaN(goalVal) || goalVal <= 0) {
       Alert.alert('Invalid Weight', 'Please enter a valid goal weight.');
       return;
     }
 
+    // Weight is already logged for today (e.g. via the Add tab) — don't write
+    // a second weight_log entry, just carry the existing value forward.
+    let curVal: number | null = null;
+    if (!todayWeightEntry) {
+      curVal = Number(modalCurrentWeight);
+      if (!modalCurrentWeight || isNaN(curVal) || curVal <= 0) {
+        Alert.alert('Invalid Weight', 'Please enter a valid current weight.');
+        return;
+      }
+    }
+
     setModalSaving(true);
     try {
-      await logWeight(user.uid, curVal);
+      if (curVal !== null) {
+        await logWeight(user.uid, curVal);
+        setWeightHistory((prev) => [...prev, { weight: curVal as number, logged_at: new Date().toISOString() }]);
+      }
       await saveUserGoals(user.uid, { weightGoal: goalVal, goalType: modalType });
       setGoalType(modalType);
-      setCurrentWeight(curVal);
       setWeightGoalInput(String(goalVal));
       setSaved(false);
       setModalType(null);
@@ -144,6 +154,8 @@ export default function GoalsScreen() {
   };
 
   const activeModalOption = GOAL_TYPE_OPTIONS.find((o) => o.id === modalType);
+  const currentWeight = weightHistory.length > 0 ? weightHistory[weightHistory.length - 1].weight : null;
+  const todayWeightEntry = weightHistory.find((e) => e.logged_at && isToday(e.logged_at));
 
   return (
     <LinearGradient colors={gradients.background} style={[styles.container, { paddingTop: insets.top }]}>
@@ -308,7 +320,7 @@ export default function GoalsScreen() {
 
             <View style={styles.modalField}>
               <Text style={styles.modalLabel}>Current Weight</Text>
-              <View style={styles.modalInputWrap}>
+              <View style={[styles.modalInputWrap, todayWeightEntry && styles.modalInputWrapDisabled]}>
                 <TextInput
                   style={styles.modalInput}
                   value={modalCurrentWeight}
@@ -318,10 +330,14 @@ export default function GoalsScreen() {
                   placeholder="0"
                   placeholderTextColor={colors.muted}
                   maxLength={6}
-                  autoFocus
+                  autoFocus={!todayWeightEntry}
+                  editable={!todayWeightEntry}
                 />
                 <Text style={styles.modalUnit}>lbs</Text>
               </View>
+              {todayWeightEntry && (
+                <Text style={styles.modalHint}>Already logged today — edit it from the Add tab.</Text>
+              )}
             </View>
 
             <View style={styles.modalField}>
@@ -648,12 +664,21 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 12,
   },
+  modalInputWrapDisabled: {
+    opacity: 0.6,
+  },
   modalInput: {
     flex: 1,
     fontSize: 18,
     fontFamily: fonts.headlineSemiBold,
     color: colors.text,
     padding: 0,
+  },
+  modalHint: {
+    fontSize: 11.5,
+    fontFamily: fonts.bodySemiBold,
+    color: colors.muted,
+    marginTop: -2,
   },
   modalUnit: {
     fontSize: 13,
