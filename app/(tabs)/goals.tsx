@@ -8,13 +8,16 @@ import {
   Alert,
   ActivityIndicator,
   ScrollView,
+  Modal,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from 'expo-router';
 import { useAuth } from '../../lib/auth';
-import { getWeightHistory, getLoggingStreak } from '../../lib/api';
+import { getWeightHistory, getLoggingStreak, logWeight } from '../../lib/api';
 import {
   getCalorieGoal,
   saveCalorieGoal,
@@ -45,6 +48,11 @@ export default function GoalsScreen() {
   const [streak, setStreak] = useState(0);
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
+
+  const [modalType, setModalType] = useState<GoalType | null>(null);
+  const [modalCurrentWeight, setModalCurrentWeight] = useState('');
+  const [modalGoalWeight, setModalGoalWeight] = useState('');
+  const [modalSaving, setModalSaving] = useState(false);
 
   const loadData = useCallback(async () => {
     const [cal, weightGoal, type] = await Promise.all([getCalorieGoal(), getWeightGoal(), getGoalType()]);
@@ -92,9 +100,45 @@ export default function GoalsScreen() {
     }
   };
 
-  const handleSelectGoalType = (type: GoalType) => {
-    setGoalType(type);
-    setSaved(false);
+  const openGoalTypeModal = (type: GoalType) => {
+    setModalCurrentWeight(currentWeight !== null ? String(currentWeight) : '');
+    setModalGoalWeight(weightGoalInput);
+    setModalType(type);
+  };
+
+  const closeGoalTypeModal = () => {
+    if (modalSaving) return;
+    setModalType(null);
+  };
+
+  const handleModalSave = async () => {
+    if (!modalType) return;
+    const curVal = Number(modalCurrentWeight);
+    const goalVal = Number(modalGoalWeight);
+    if (!modalCurrentWeight || isNaN(curVal) || curVal <= 0) {
+      Alert.alert('Invalid Weight', 'Please enter a valid current weight.');
+      return;
+    }
+    if (!modalGoalWeight || isNaN(goalVal) || goalVal <= 0) {
+      Alert.alert('Invalid Weight', 'Please enter a valid goal weight.');
+      return;
+    }
+
+    setModalSaving(true);
+    try {
+      if (user) await logWeight(user.uid, curVal);
+      await saveWeightGoal(goalVal);
+      await saveGoalType(modalType);
+      setGoalType(modalType);
+      setCurrentWeight(curVal);
+      setWeightGoalInput(String(goalVal));
+      setSaved(false);
+      setModalType(null);
+    } catch {
+      Alert.alert('Error', 'Failed to save. Please try again.');
+    } finally {
+      setModalSaving(false);
+    }
   };
 
   const handlePreset = (val: number) => {
@@ -109,6 +153,7 @@ export default function GoalsScreen() {
     setSaved(false);
   };
 
+  const activeModalOption = GOAL_TYPE_OPTIONS.find((o) => o.id === modalType);
 
   return (
     <LinearGradient colors={gradients.background} style={[styles.container, { paddingTop: insets.top }]}>
@@ -148,7 +193,7 @@ export default function GoalsScreen() {
               <TouchableOpacity
                 key={opt.id}
                 style={[styles.goalTypeCard, selected && styles.goalTypeCardActive]}
-                onPress={() => handleSelectGoalType(opt.id)}
+                onPress={() => openGoalTypeModal(opt.id)}
                 activeOpacity={0.8}
               >
                 {selected ? (
@@ -251,6 +296,83 @@ export default function GoalsScreen() {
           </LinearGradient>
         </TouchableOpacity>
       </ScrollView>
+
+      <Modal
+        visible={modalType !== null}
+        transparent
+        animationType="fade"
+        onRequestClose={closeGoalTypeModal}
+      >
+        <KeyboardAvoidingView
+          style={styles.modalOverlay}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        >
+          <View style={styles.modalCard}>
+            <Text style={styles.modalTitle}>{activeModalOption?.label}</Text>
+            <Text style={styles.modalSubtitle}>{activeModalOption?.desc}</Text>
+
+            <View style={styles.modalField}>
+              <Text style={styles.modalLabel}>Current Weight</Text>
+              <View style={styles.modalInputWrap}>
+                <TextInput
+                  style={styles.modalInput}
+                  value={modalCurrentWeight}
+                  onChangeText={setModalCurrentWeight}
+                  keyboardType="decimal-pad"
+                  returnKeyType="next"
+                  placeholder="0"
+                  placeholderTextColor={colors.muted}
+                  maxLength={6}
+                  autoFocus
+                />
+                <Text style={styles.modalUnit}>lbs</Text>
+              </View>
+            </View>
+
+            <View style={styles.modalField}>
+              <Text style={styles.modalLabel}>Goal Weight</Text>
+              <View style={styles.modalInputWrap}>
+                <TextInput
+                  style={styles.modalInput}
+                  value={modalGoalWeight}
+                  onChangeText={setModalGoalWeight}
+                  keyboardType="decimal-pad"
+                  returnKeyType="done"
+                  placeholder="0"
+                  placeholderTextColor={colors.muted}
+                  maxLength={6}
+                />
+                <Text style={styles.modalUnit}>lbs</Text>
+              </View>
+            </View>
+
+            <View style={styles.modalActions}>
+              <TouchableOpacity
+                style={styles.modalCancelBtn}
+                onPress={closeGoalTypeModal}
+                disabled={modalSaving}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.modalCancelText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={handleModalSave}
+                disabled={modalSaving}
+                activeOpacity={0.85}
+                style={[styles.modalSaveBtnWrap, modalSaving && styles.saveBtnDisabled]}
+              >
+                <LinearGradient colors={gradients.primary} style={styles.modalSaveBtn}>
+                  {modalSaving ? (
+                    <ActivityIndicator color={colors.white} size="small" />
+                  ) : (
+                    <Text style={styles.modalSaveText}>Save</Text>
+                  )}
+                </LinearGradient>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
     </LinearGradient>
   );
 }
@@ -478,5 +600,99 @@ const styles = StyleSheet.create({
     color: colors.white,
     fontFamily: fonts.bodyBold,
     fontSize: 17,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(58,42,24,0.45)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  modalCard: {
+    width: '100%',
+    maxWidth: 380,
+    backgroundColor: colors.card,
+    borderRadius: radius.xl,
+    borderWidth: 1.5,
+    borderColor: colors.border,
+    padding: 22,
+    gap: 16,
+    ...shadow.card,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontFamily: fonts.headline,
+    color: colors.text,
+  },
+  modalSubtitle: {
+    fontSize: 13,
+    fontFamily: fonts.bodySemiBold,
+    color: colors.muted,
+    marginTop: -12,
+  },
+  modalField: {
+    gap: 6,
+  },
+  modalLabel: {
+    fontSize: 12.5,
+    fontFamily: fonts.bodyBold,
+    color: colors.muted,
+  },
+  modalInputWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: colors.cardAlt,
+    borderWidth: 1.5,
+    borderColor: colors.border,
+    borderRadius: radius.sm,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+  },
+  modalInput: {
+    flex: 1,
+    fontSize: 18,
+    fontFamily: fonts.headlineSemiBold,
+    color: colors.text,
+    padding: 0,
+  },
+  modalUnit: {
+    fontSize: 13,
+    fontFamily: fonts.bodyBold,
+    color: colors.muted,
+  },
+  modalActions: {
+    flexDirection: 'row',
+    gap: 10,
+    marginTop: 4,
+  },
+  modalCancelBtn: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 14,
+    borderRadius: radius.md,
+    borderWidth: 1.5,
+    borderColor: colors.border,
+    backgroundColor: colors.cardAlt,
+  },
+  modalCancelText: {
+    fontSize: 15,
+    fontFamily: fonts.bodyBold,
+    color: colors.muted,
+  },
+  modalSaveBtnWrap: {
+    flex: 1,
+    borderRadius: radius.md,
+    overflow: 'hidden',
+  },
+  modalSaveBtn: {
+    paddingVertical: 14,
+    alignItems: 'center',
+  },
+  modalSaveText: {
+    fontSize: 15,
+    fontFamily: fonts.bodyBold,
+    color: colors.white,
   },
 });
