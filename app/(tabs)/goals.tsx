@@ -307,6 +307,11 @@ export default function GoalsScreen() {
           style={styles.modalOverlay}
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         >
+          <ScrollView
+            contentContainerStyle={styles.modalScrollContent}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+          >
           <View style={styles.modalCard}>
             <Text style={styles.modalTitle}>{activeModalOption?.label}</Text>
             <Text style={styles.modalSubtitle}>{activeModalOption?.desc}</Text>
@@ -371,6 +376,7 @@ export default function GoalsScreen() {
               </TouchableOpacity>
             </View>
           </View>
+          </ScrollView>
         </KeyboardAvoidingView>
       </Modal>
     </LinearGradient>
@@ -604,6 +610,9 @@ const styles = StyleSheet.create({
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(58,42,24,0.45)',
+  },
+  modalScrollContent: {
+    flexGrow: 1,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 24,
