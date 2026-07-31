@@ -40,6 +40,7 @@ export default function GoalsScreen() {
   const [streak, setStreak] = useState(0);
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [editingCalorie, setEditingCalorie] = useState(false);
 
   const [modalType, setModalType] = useState<GoalType | null>(null);
   const [modalCurrentWeight, setModalCurrentWeight] = useState('');
@@ -84,6 +85,7 @@ export default function GoalsScreen() {
       if (weightGoalInput) patch.weightGoal = Number(weightGoalInput);
       await saveUserGoals(user.uid, patch);
       setSaved(true);
+      setEditingCalorie(false);
     } catch {
       Alert.alert('Error', 'Failed to save goals. Please try again.');
     } finally {
@@ -248,39 +250,62 @@ export default function GoalsScreen() {
           {/* Daily Calorie Goal */}
           <View style={styles.row}>
             <Text style={styles.rowLabel}>Daily Calorie Goal</Text>
-            <View style={styles.stepper}>
-              <TouchableOpacity style={styles.stepBtn} onPress={() => adjust(-50)} activeOpacity={0.7}>
-                <Text style={styles.stepBtnText}>−</Text>
-              </TouchableOpacity>
-              <TextInput
-                style={styles.calorieInput}
-                value={calorieInput}
-                onChangeText={(v) => { setCalorieInput(v); setSaved(false); }}
-                keyboardType="number-pad"
-                returnKeyType="done"
-                maxLength={5}
-                selectTextOnFocus
-              />
-              <TouchableOpacity style={styles.stepBtn} onPress={() => adjust(50)} activeOpacity={0.7}>
-                <Text style={styles.stepBtnText}>+</Text>
-              </TouchableOpacity>
-            </View>
+            {editingCalorie ? (
+              <View style={styles.stepper}>
+                <TouchableOpacity style={styles.stepBtn} onPress={() => adjust(-50)} activeOpacity={0.7}>
+                  <Text style={styles.stepBtnText}>−</Text>
+                </TouchableOpacity>
+                <TextInput
+                  style={styles.calorieInput}
+                  value={calorieInput}
+                  onChangeText={(v) => { setCalorieInput(v); setSaved(false); }}
+                  keyboardType="number-pad"
+                  returnKeyType="done"
+                  maxLength={5}
+                  selectTextOnFocus
+                  autoFocus
+                />
+                <TouchableOpacity style={styles.stepBtn} onPress={() => adjust(50)} activeOpacity={0.7}>
+                  <Text style={styles.stepBtnText}>+</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.editToggleBtn}
+                  onPress={() => setEditingCalorie(false)}
+                  activeOpacity={0.7}
+                >
+                  <Ionicons name="checkmark" size={16} color={colors.primaryDark} />
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <View style={styles.calorieReadRow}>
+                <Text style={styles.calorieReadValue}>{calorieInput || '—'} kcal</Text>
+                <TouchableOpacity
+                  style={styles.editToggleBtn}
+                  onPress={() => setEditingCalorie(true)}
+                  activeOpacity={0.7}
+                >
+                  <Ionicons name="pencil" size={15} color={colors.primaryDark} />
+                </TouchableOpacity>
+              </View>
+            )}
           </View>
 
-          <View style={styles.presets}>
-            {PRESETS.map((p) => (
-              <TouchableOpacity
-                key={p}
-                style={[styles.presetBtn, Number(calorieInput) === p && styles.presetBtnActive]}
-                onPress={() => handlePreset(p)}
-                activeOpacity={0.7}
-              >
-                <Text style={[styles.presetText, Number(calorieInput) === p && styles.presetTextActive]}>
-                  {p}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
+          {editingCalorie && (
+            <View style={styles.presets}>
+              {PRESETS.map((p) => (
+                <TouchableOpacity
+                  key={p}
+                  style={[styles.presetBtn, Number(calorieInput) === p && styles.presetBtnActive]}
+                  onPress={() => handlePreset(p)}
+                  activeOpacity={0.7}
+                >
+                  <Text style={[styles.presetText, Number(calorieInput) === p && styles.presetTextActive]}>
+                    {p}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
         </View>
 
         <TouchableOpacity
@@ -568,6 +593,26 @@ const styles = StyleSheet.create({
     minWidth: 56,
     textAlign: 'center',
     padding: 0,
+  },
+  calorieReadRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  calorieReadValue: {
+    fontSize: 16,
+    fontFamily: fonts.headlineSemiBold,
+    color: colors.text,
+  },
+  editToggleBtn: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: colors.cardAlt,
+    borderWidth: 1,
+    borderColor: colors.border,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   presets: {
     flexDirection: 'row',
