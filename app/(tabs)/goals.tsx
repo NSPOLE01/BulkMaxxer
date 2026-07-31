@@ -41,6 +41,7 @@ export default function GoalsScreen() {
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
   const [editingCalorie, setEditingCalorie] = useState(false);
+  const [editingWeight, setEditingWeight] = useState(false);
 
   const [modalType, setModalType] = useState<GoalType | null>(null);
   const [modalCurrentWeight, setModalCurrentWeight] = useState('');
@@ -86,6 +87,7 @@ export default function GoalsScreen() {
       await saveUserGoals(user.uid, patch);
       setSaved(true);
       setEditingCalorie(false);
+      setEditingWeight(false);
     } catch {
       Alert.alert('Error', 'Failed to save goals. Please try again.');
     } finally {
@@ -229,20 +231,43 @@ export default function GoalsScreen() {
           {/* Target Weight */}
           <View style={styles.row}>
             <Text style={styles.rowLabel}>Target Weight</Text>
-            <View style={styles.weightInputWrap}>
-              <TextInput
-                style={styles.weightInput}
-                value={weightGoalInput}
-                onChangeText={(v) => { setWeightGoalInput(v); setSaved(false); }}
-                keyboardType="decimal-pad"
-                returnKeyType="done"
-                placeholder="0"
-                placeholderTextColor={colors.muted}
-                maxLength={6}
-                selectTextOnFocus
-              />
-              <Text style={styles.weightUnit}>lbs</Text>
-            </View>
+            {editingWeight ? (
+              <View style={styles.weightEditRow}>
+                <View style={styles.weightInputWrap}>
+                  <TextInput
+                    style={styles.weightInput}
+                    value={weightGoalInput}
+                    onChangeText={(v) => { setWeightGoalInput(v); setSaved(false); }}
+                    keyboardType="decimal-pad"
+                    returnKeyType="done"
+                    placeholder="0"
+                    placeholderTextColor={colors.muted}
+                    maxLength={6}
+                    selectTextOnFocus
+                    autoFocus
+                  />
+                  <Text style={styles.weightUnit}>lbs</Text>
+                </View>
+                <TouchableOpacity
+                  style={styles.editToggleBtn}
+                  onPress={() => setEditingWeight(false)}
+                  activeOpacity={0.7}
+                >
+                  <Ionicons name="checkmark" size={16} color={colors.primaryDark} />
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <View style={styles.calorieReadRow}>
+                <Text style={styles.calorieReadValue}>{weightGoalInput ? `${weightGoalInput} lbs` : '—'}</Text>
+                <TouchableOpacity
+                  style={styles.editToggleBtn}
+                  onPress={() => setEditingWeight(true)}
+                  activeOpacity={0.7}
+                >
+                  <Ionicons name="pencil" size={15} color={colors.primaryDark} />
+                </TouchableOpacity>
+              </View>
+            )}
           </View>
 
           <View style={styles.rowDivider} />
@@ -540,6 +565,11 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontFamily: fonts.bodyBold,
     color: colors.text,
+  },
+  weightEditRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
   },
   weightInputWrap: {
     flexDirection: 'row',
