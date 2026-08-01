@@ -218,8 +218,9 @@ export default function DashboardScreen() {
                     yAxisOffset={minW}
                     maxValue={maxW - minW}
                     noOfSections={4}
-                    referenceLine1Position={weightGoal ? weightGoal - minW : undefined}
-                    referenceLine1Config={weightGoal ? { color: colors.accent, thickness: 1, width: SCREEN_WIDTH - 96 } : undefined}
+                    showReferenceLine1={!!weightGoal}
+                    referenceLine1Position={weightGoal ?? undefined}
+                    referenceLine1Config={weightGoal ? { color: colors.accent, thickness: 1, width: SCREEN_WIDTH - 96, dashWidth: 4, dashGap: 4 } : undefined}
                   />
                 </View>
                 {weightGoal ? (
