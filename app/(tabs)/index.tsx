@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Ionicons } from '@expo/vector-icons';
 import { BarChart, LineChart } from 'react-native-gifted-charts';
 import { useAuth } from '../../lib/auth';
 import { getTodayLog, getWeekLog, getWeightHistory, FoodEntry, WeekDay, WeightEntry } from '../../lib/api';
@@ -67,6 +68,7 @@ export default function DashboardScreen() {
   const [calorieGoal, setCalorieGoal] = useState(2000);
   const [weightGoal, setWeightGoal] = useState<number | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [loaded, setLoaded] = useState(false);
 
   const loadData = useCallback(async () => {
     if (!user) return;
@@ -82,6 +84,7 @@ export default function DashboardScreen() {
       setCalorieGoal(userGoals.calorieGoal);
       setWeightGoal(userGoals.weightGoal);
       setWeightHistory(wHistory);
+      setLoaded(true);
     } catch (e) {
       console.error('Failed to load dashboard data', e);
     }
@@ -104,6 +107,8 @@ export default function DashboardScreen() {
   const totalFat = entries.reduce((s, e) => s + Number(e.fat), 0);
   const totalSugar = entries.reduce((s, e) => s + Number(e.sugar), 0);
   const totalSodium = entries.reduce((s, e) => s + Number(e.sodium), 0);
+  const caloriesRemaining = Math.max(0, calorieGoal - totalCalories);
+  const showEatMoreBanner = loaded && caloriesRemaining > 0;
 
   const today = new Date().toLocaleDateString('en-US', {
     weekday: 'long',
@@ -135,6 +140,22 @@ export default function DashboardScreen() {
           <Text style={styles.appName}>BulkMaxxer</Text>
           <Text style={styles.dateText}>{today}</Text>
         </View>
+
+        {showEatMoreBanner && (
+          <View style={styles.section}>
+            <View style={styles.eatMoreBanner}>
+              <View style={styles.eatMoreIconBox}>
+                <Ionicons name="flame" size={20} color={colors.white} />
+              </View>
+              <View style={styles.eatMoreTextBox}>
+                <Text style={styles.eatMoreTitle}>You're under your calorie goal</Text>
+                <Text style={styles.eatMoreSubtitle}>
+                  Eat {Math.round(caloriesRemaining)} more calories to hit your surplus today.
+                </Text>
+              </View>
+            </View>
+          </View>
+        )}
 
         <View style={styles.section}>
           <CalorieCard consumed={totalCalories} goal={calorieGoal} />
@@ -273,6 +294,40 @@ const styles = StyleSheet.create({
   section: {
     paddingHorizontal: 22,
     marginBottom: 18,
+  },
+  eatMoreBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+    padding: 16,
+    backgroundColor: colors.dangerBg,
+    borderRadius: radius.lg,
+    borderWidth: 1.5,
+    borderColor: colors.dangerBorder,
+    ...shadow.soft,
+  },
+  eatMoreIconBox: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.danger,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  eatMoreTextBox: {
+    flex: 1,
+  },
+  eatMoreTitle: {
+    fontSize: 14.5,
+    fontFamily: fonts.headlineSemiBold,
+    color: colors.dangerDark,
+  },
+  eatMoreSubtitle: {
+    fontSize: 12.5,
+    fontFamily: fonts.bodySemiBold,
+    color: colors.dangerDark,
+    marginTop: 2,
+    opacity: 0.85,
   },
   calorieCard: {
     padding: 20,

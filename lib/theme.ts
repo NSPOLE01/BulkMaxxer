@@ -16,11 +16,16 @@ export const colors = {
   borderLight: 'rgba(90,70,48,0.14)',
   track: 'rgba(58,42,24,0.08)',
   white: '#FFFFFF',
+  danger: '#C1442E',
+  dangerDark: '#96331F',
+  dangerBg: '#FBE2D8',
+  dangerBorder: 'rgba(150,51,31,0.32)',
 };
 
 export const gradients = {
   background: [colors.bgGradientTop, colors.bgGradientBottom] as const,
   primary: [colors.primary, colors.primaryDark] as const,
+  danger: [colors.danger, colors.dangerDark] as const,
 };
 
 export const fonts = {
